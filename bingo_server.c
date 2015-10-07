@@ -38,7 +38,10 @@ main(int argc, char* argv[]){
 
 	Partida* partida[10];
 	Jugador* jugador[40];
-	Jugador* jug_aux = NULL;
+	
+	/*variables auxiliares para registrar jugadores*/
+	char reg_username[40];
+	char reg_pass[128];
 
 	int sd, new_sd;
 	struct sockaddr_in sockname, from;
@@ -272,11 +275,37 @@ main(int argc, char* argv[]){
 							}
 
 							/*registrar usuario*/
-							if(strcmp(buffer,"REGISTER")==0){
+							if(strcmp(pch,"REGISTER")==0){
+								if(strcmp(strtok(NULL," "),"-u")==0){
+									strcpy(reg_username, strtok(NULL, " "));
+									if(strcmp(strtok(NULL, " "),"-p")==0){
+										strcpy(reg_pass, strtok(NULL," \n"));
+										if(jugador_registrar(reg_username, reg_pass)>0){
+											strcpy(buffer,"+Ok. Usuario registrado correctamente");
+											send(i,buffer,strlen(buffer),0);
+										}
+										else{
+											strcpy(buffer,"-Err. No se pudo registrar el usuario");
+											send(i,buffer,strlen(buffer),0);
+										}
+									}
+									else{
+										/*error*/
+										strcpy(buffer,"-Err. Comando desconocido");
+										send(i,buffer,strlen(buffer),0);
+									}
+								}
+								else{
+									/*error*/
+									strcpy(buffer,"-Err. Comando desconocido");
+									send(i,buffer,strlen(buffer),0);
+								}
 
+								bzero(reg_username,sizeof(reg_username));
+								bzero(reg_pass,sizeof(reg_pass));
 							}
 
-							if(strcmp(buffer,"INICIAR-PARTIDA")==0){
+							if(strcmp(pch,"INICIAR-PARTIDA")==0){
 
 								bzero(buffer,sizeof(buffer));
 

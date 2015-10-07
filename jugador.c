@@ -87,7 +87,7 @@ int jugador_login(Jugador** j, const char pass[128]){
 			pch = strtok(linea," ");
 			if(strcmp(pch,(*j)->username) == 0){
 				/*comprobar password*/
-				pch = strtok(NULL," ");
+				pch = strtok(NULL," \n");
 				if(strcmp(pch,pass) == 0){
 					(*j)->logeado = 1;
 					fclose(fp);
