@@ -42,7 +42,10 @@ main(int argc, char* argv[]){
 
 	int sd, new_sd;
 	struct sockaddr_in sockname, from;
+
 	char buffer[MSG_SIZE];
+	char * pch; /*para strtok*/
+
 	socklen_t from_len;
 	struct hostent * host;
 	fd_set readfds, auxfds;
@@ -219,43 +222,49 @@ main(int argc, char* argv[]){
 						recibidos = recv(i,buffer,sizeof(buffer),0);
 
 						if(recibidos>0){
-
+							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
 							printf("%s",buffer);
-							if(strstr(buffer,"USUARIO ")!=NULL){
+							if(strcmp(pch,"USUARIO")==0){
 								ret=buscar_jugador(jugador,i);
 
 								if(ret!=-1 && jugador[ret]!=NULL){
-									bzero(jugador[ret]->username, sizeof(jugador[ret]->pass));
+									bzero(jugador[ret]->username, sizeof(jugador[ret]->username));
 									bzero(identificador, sizeof(identificador));
 
-									/*copio cadena despues del primer espacio en username->jugador*/
-									printf("socket:%d->%s",i,&buffer[strchr(buffer,' ')-buffer+1]);
-									strcpy(jugador[ret]->username, &buffer[strchr(buffer,' ')-buffer+1]);
-									sprintf(identificador,"slot:%d socket:%d %s",ret,jugador[ret]->id,jugador[ret]->username);
-									send(i,identificador,strlen(identificador),0);
+									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
+
+									/*comprobar que el username esta registradon el el fichero*/
+									if(jugador_registrado(pch)==1){
+
+										/*copio cadena despues del primer espacio en username->jugador*/
+										strcpy(jugador[ret]->username, pch);
+										/*sprintf(identificador,"slot:%d socket:%d #%s#",ret,jugador[ret]->id,jugador[ret]->username);*/
+										strcpy(buffer,"+Ok. Usuario correcto.");
+										send(i,buffer,strlen(buffer),0);
+									}
+									else{
+										strcpy(buffer,"-ERR. Usuario incorrecto.\n");
+										send(i,buffer,strlen(buffer),0);
+									}
 
 								}
 							}
 
 							/*si recibo password y es correcta, hago login del usuario*/
-							if(strstr(buffer,"PASSWORD ")!=NULL){
+							if(strcmp(pch,"PASSWORD")==0){
 								ret=buscar_jugador(jugador,i);
 								if(ret!=-1 && jugador[ret]!=NULL){
-									bzero(jugador[ret]->pass, sizeof(jugador[ret]->pass));
-									/*copio en jugador->pass la parte pass de la cadena recibida*/
-									strcpy(jugador[ret]->pass, &buffer[strchr(buffer,' ')-buffer+1]);
-
-
+									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
 
 									/*intento login, informar del resultado*/
-									if(jugador_login(&jugador[ret]) > 0){
+									if(jugador_login(&jugador[ret],pch) > 0){
 										sprintf(buffer,"+Ok. Se ha logeado como %s",jugador[ret]->username);
-										printf("enviando a %s por %d\n",jugador[ret]->pass,i);
+										printf("Error pass #%s# por %d\n",pch,i);
 										send(i,buffer,strlen(buffer),0);
 									}
 									else{
-										printf("enviando ERROR a %s por %d\n",jugador[ret]->pass,i);
-										strcpy(buffer,"-ERR. Usuario o contraseña incorrectos.");
+										printf("ERROR #%s# por %d\n",pch,i);
+										strcpy(buffer,"-ERR. Contraseña incorrecta.");
 										send(i,buffer,strlen(buffer),0);
 									}
 
@@ -263,24 +272,11 @@ main(int argc, char* argv[]){
 							}
 
 							/*registrar usuario*/
-							if(strcmp(buffer,"REGISTER\n")==0){
-								bzero(buffer,sizeof(buffer));
-								ret=buscar_jugador(jugador,i);
-								if(ret!=-1 && jugador[ret]!=NULL){
-									if(jugador_registrar(&jugador[ret])>0){
-										bzero(buffer,sizeof(buffer));
-										sprintf(buffer,"+Ok. Se ha registrado y logeado como %s",jugador[ret]->username);
-										send(i,buffer,strlen(buffer),0);
-									}
-									else{
-										/*No se pudo registrar*/
-										strcpy(buffer,"-ERR. No se pudo registrar");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
+							if(strcmp(buffer,"REGISTER")==0){
+
 							}
 
-							if(strcmp(buffer,"INICIAR-PARTIDA\n")==0){
+							if(strcmp(buffer,"INICIAR-PARTIDA")==0){
 
 								bzero(buffer,sizeof(buffer));
 
@@ -341,13 +337,13 @@ main(int argc, char* argv[]){
 								}
 							}
 
-							if(strcmp(buffer,"ID\n")==0){
+							if(strcmp(buffer,"ID")==0){
 								bzero(identificador,sizeof(identificador));
 								sprintf(identificador,"%d",i);
 								send(i,identificador,strlen(identificador),0);
 							}
 
-							if(strcmp(buffer,"WHO\n")==0){
+							if(strcmp(buffer,"WHO")==0){
 								ret = buscar_jugador(jugador,i);
 								sprintf(identificador,"slot:%d socket:%d user:%s",ret,i,jugador[ret]->username);
 								if(ret!=-1 && jugador[ret]!=NULL){
@@ -360,7 +356,7 @@ main(int argc, char* argv[]){
 								}
 							}
 
-							if(strcmp(buffer,"PARTIDA\n")==0){
+							if(strcmp(buffer,"PARTIDA")==0){
 								bzero(buffer,sizeof(buffer));
 
 								ret=buscar_jugador(jugador,i);
