@@ -69,9 +69,9 @@ int jugador_registrar(Jugador** j){
  */
 int jugador_login(Jugador** j){
 	FILE *fp;
-	char *linea = NULL;
-	char * pch;
-	size_t len = 0;
+	char* linea = NULL;
+	char* pch;
+	int len = 100;
 	size_t read;
 
 	fp = fopen("users.txt","r");
@@ -80,19 +80,25 @@ int jugador_login(Jugador** j){
 	}
 	else{
 		/*comprobar si existe username*/
-		while(getline(linea,250,fp) != -1){
+		while(getline(&linea,&len,fp) != -1){
 			/*leer linea a linea hasta encontrar usuario*/
 			pch = strtok(linea," ");
-			if(strcmp(pch,(*fp)->username) == 0){
-				if(strcmp(strtok(NULL," "),(*fp)->pass) == 0){
+			if(strcmp(pch,(*j)->username) == 0){
+				/*comprobar password*/
+				if(strcmp(strtok(NULL," "),(*j)->pass) == 0){
 					(*j)->logeado = 1;
 					fclose(fp);
 					return 1;
 				}
 				else{
+					(*j)->logeado = 0;
 					fclose(fp);
 					return 0;
 				}
+			}
+			else{
+				/*usuario no registrado*/
+				(*j)->logeado=0;
 			}
 		}
 		fclose(fp);

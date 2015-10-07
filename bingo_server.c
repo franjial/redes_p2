@@ -237,12 +237,46 @@ main(int argc, char* argv[]){
 								}
 							}
 
+							/*si recibo password y es correcta, hago login del usuario*/
 							if(strstr(buffer,"PASSWORD ")!=NULL){
 								ret=buscar_jugador(jugador,i);
 								if(ret!=-1 && jugador[ret]!=NULL){
 									bzero(jugador[ret]->pass, sizeof(jugador[ret]->pass));
 									/*copio en jugador->pass la parte pass de la cadena recibida*/
 									strcpy(jugador[ret]->pass, &buffer[strchr(buffer,' ')-buffer+1]);
+
+
+
+									/*intento login, informar del resultado*/
+									if(jugador_login(&jugador[ret]) > 0){
+										sprintf(buffer,"+Ok. Se ha logeado como %s",jugador[ret]->username);
+										printf("enviando a %s por %d\n",jugador[ret]->pass,i);
+										send(i,buffer,strlen(buffer),0);
+									}
+									else{
+										printf("enviando ERROR a %s por %d\n",jugador[ret]->pass,i);
+										strcpy(buffer,"-ERR. Usuario o contraseña incorrectos.");
+										send(i,buffer,strlen(buffer),0);
+									}
+
+								}
+							}
+
+							/*registrar usuario*/
+							if(strcmp(buffer,"REGISTER\n")==0){
+								bzero(buffer,sizeof(buffer));
+								ret=buscar_jugador(jugador,i);
+								if(ret!=-1 && jugador[ret]!=NULL){
+									if(jugador_registrar(&jugador[ret])>0){
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"+Ok. Se ha registrado y logeado como %s",jugador[ret]->username);
+										send(i,buffer,strlen(buffer),0);
+									}
+									else{
+										/*No se pudo registrar*/
+										strcpy(buffer,"-ERR. No se pudo registrar");
+										send(i,buffer,strlen(buffer),0);
+									}
 								}
 							}
 
