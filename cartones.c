@@ -3,6 +3,7 @@
 #include "bolas.h"
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 void carton_nuevo(int carton[3][9]){
@@ -109,8 +110,8 @@ void carton_nuevo(int carton[3][9]){
   }
   bombo_clean(&bombo);
 
-  
-  
+
+
   srand(time(NULL));
   for(i=0;i<3;i++){
     n=4;
@@ -134,3 +135,19 @@ void carton_print(int carton[3][9]){
   }
 }
 
+void carton_str(char** buffer, int carton[3][9]){
+  int i,j;
+  char aux[4];
+
+  strcpy(*buffer,"CARTON|");
+  for(i=0;i<3;i++){
+    for(j=0;j<9;j++){
+      if(carton[i][j]==-1){
+        sprintf(aux,"X, ");
+      }else{
+        sprintf(aux,"Num. %d, ",carton[i][j]);
+      }
+      strcat(*buffer,aux);
+    }
+  }
+}

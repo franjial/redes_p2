@@ -12,7 +12,7 @@ test_bolas.x : test_bolas.o bolas.o
 test_jugador.x : test_jugador.o jugador.o
 	gcc -lcunit -g -o test_jugador.x test_jugador.o jugador.o
 
-bingo_cliente.o : bingo_client.c
+bingo_client.o : bingo_client.c
 	gcc -g -c bingo_client.c
 
 test_bolas.o : test_bolas.c
@@ -22,7 +22,7 @@ test_jugador.o : test_jugador.c
 	gcc -g -c test_jugador.c -lcunit -g
 
 bongo_server.o : bingo_server.c
-	gcc -g -c bingo_server.c
+	gcc -g -c bingo_server.c partida.h jugador.h cartones.h
 
 bolas.o : bolas.c bolas.h
 	gcc -g -c bolas.c bolas.h

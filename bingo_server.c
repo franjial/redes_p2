@@ -3,6 +3,7 @@
 #include <string.h>
 #include "partida.h"
 #include "jugador.h"
+#include "cartones.h"
 
 
 #include <sys/types.h>
@@ -38,7 +39,7 @@ main(int argc, char* argv[]){
 
 	Partida* partida[10];
 	Jugador* jugador[40];
-	
+
 	/*variables auxiliares para registrar jugadores*/
 	char reg_username[40];
 	char reg_pass[128];
@@ -227,6 +228,8 @@ main(int argc, char* argv[]){
 						if(recibidos>0){
 							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
 							printf("%s",buffer);
+
+
 							if(strcmp(pch,"USUARIO")==0){
 								ret=buscar_jugador(jugador,i);
 
@@ -303,6 +306,28 @@ main(int argc, char* argv[]){
 
 								bzero(reg_username,sizeof(reg_username));
 								bzero(reg_pass,sizeof(reg_pass));
+							}
+
+							/*enviar su carton a jugador*/
+							if(strcmp(pch,"CARTON")==0){
+								ret=buscar_jugador(jugador,i);
+								if(ret==-1 || jugador[ret]==NULL){
+									strcpy(buffer,"-Err. no tienes carton\n");
+									send(i,buffer,strlen(buffer),0);
+								}
+								else{
+									if(jugador[ret]->id_partida == -1){
+										/*no esta en partida*/
+										strcpy(buffer,"-Err. no estas jugando\n");
+										send(i,buffer,strlen(buffer),0);
+									}
+									else{
+										/*esta en una partida*/
+										strcpy(buffer,"**");
+										carton_str(&buffer,jugador[ret]->carton);
+										send(i,buffer,strlen(buffer),0);
+									}
+								}
 							}
 
 							if(strcmp(pch,"INICIAR-PARTIDA")==0){
