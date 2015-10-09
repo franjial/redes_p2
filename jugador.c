@@ -1,5 +1,4 @@
 #include "jugador.h"
-#include "cartones.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,9 +7,21 @@
  * y devuelve 0.
  */
 int jugador_nuevo(Jugador** jugador){
+	/**/	
+	int i,j;
+
 	*jugador = (Jugador*) malloc(sizeof(Jugador));
 	(*jugador)->id_partida = -1; /*ninguna partida asignada inicialmente*/
 	strcpy((*jugador)->username,"DESCONOCIDO"); /*inicialmente desconocido*/
+
+
+	/*inicializar un carton vacio*/
+	for(i=0;i<3;i++){
+		for(j=0;j<9;j++){
+			(*jugador)->carton[i][j]=-1;
+		}
+	}
+	
 
 
 	return 1;
@@ -122,7 +133,7 @@ int jugador_registrado(const char username[40]){
 
 
 	fp = fopen("users.txt","r");
-	if(fp == NULL){
+	if(fp == NULL && username==NULL){
 		return -1;
 	}
 	else{

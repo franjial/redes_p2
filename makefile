@@ -1,4 +1,4 @@
-all: server.x client.x test_bolas.x test_jugador.x
+all: server.x client.x test_bolas.x test_jugador.x test_cartones.x
 
 server.x : bingo_server.o bolas.o cartones.o jugador.o partida.o
 	gcc -g -o server.x bingo_server.o bolas.o cartones.o jugador.o partida.o
@@ -11,6 +11,9 @@ test_bolas.x : test_bolas.o bolas.o
 
 test_jugador.x : test_jugador.o jugador.o
 	gcc -lcunit -g -o test_jugador.x test_jugador.o jugador.o
+
+test_cartones.x : test_cartones.o cartones.o bolas.o
+	gcc -lcunit -g -o test_cartones.x test_cartones.o cartones.o bolas.o
 
 bingo_client.o : bingo_client.c
 	gcc -g -c bingo_client.c
@@ -28,7 +31,7 @@ bolas.o : bolas.c bolas.h
 	gcc -g -c bolas.c bolas.h
 
 cartones.o : cartones.c cartones.h bolas.h
-	gcc -g -c cartones.c
+	gcc -g -c cartones.c cartones.h bolas.h
 
 jugador.o : jugador.c jugador.h bolas.h
 	gcc -g -c jugador.c jugador.h bolas.h

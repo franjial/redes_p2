@@ -53,13 +53,14 @@ main(int argc, char* argv[]){
 			bzero(buffer,sizeof(buffer));
 			recv(sd,buffer,sizeof(buffer),0);
 
-			printf("\nSERVIDOR: %s\n",buffer);
-			if(strcmp(buffer,"+Ok. Usuario conectado")){
-
+			if(strcmp(buffer,"SALIR")==0){
+				close(sd);
+				return -1;
 			}
 
-
-
+			else{
+				printf("\nSERVIDOR: %s\n",buffer);
+			}
 
 		}else{ /*informacion por teclado*/
 			bzero(buffer,sizeof(buffer));
@@ -69,7 +70,10 @@ main(int argc, char* argv[]){
 				fin = 1;
 			}
 
-			send(sd,buffer,sizeof(buffer),0);
+			if(strlen(buffer)>0 && strcmp(buffer,"\n")!=0){
+				send(sd,buffer,sizeof(buffer),0);
+			}
+			
 		}
 
 	}while(fin==0);

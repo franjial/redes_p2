@@ -69,3 +69,22 @@ int partida_clean(Partida** partida){
 	free(*partida);
 
 }
+
+/** 
+ * Sacar jugador de una partida si esta dentro de ella
+ */
+int partida_sacar_jugador(Partida** partida, int id_jugador){
+	int i;
+
+	if(*partida == NULL){
+		return 0;
+	}
+
+	for(i=0;i<4;i++){
+		if((*partida)->jugadores[i]->id==id_jugador){
+			(*partida)->jugadores[i]=NULL;
+			return 1;
+		}
+	}
+	return 0;
+}

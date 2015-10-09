@@ -26,4 +26,6 @@ int partida_slinea(Partida** partida, Jugador* jugador); /*comprueba segunda lin
 int partida_ingresar(Partida** partida, Jugador** jugador); /*ingresa un jugador*/
 int partida_clean(Partida** partida);
 
+int partida_sacar_jugador(Partida** partida, int id_jugador); /*sacar jugador de la partida*/
+
 #endif

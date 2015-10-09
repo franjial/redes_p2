@@ -62,6 +62,9 @@ main(int argc, char* argv[]){
 	int keep_going=1;
 	int bola;
 
+	char micarton[170];
+	char num[2]; /*para imprimir numero carton*/
+
 
 	/*inicializar punteros a NULL*/
 	for(i=0;i<40;i++){
@@ -120,9 +123,11 @@ main(int argc, char* argv[]){
 	/*servidor acepta una peticion*/
 	while(1){
 
+		/*interrupcion periodica para sacar bolas*/
 		alarm(6);
 		if(sacar==1){
 			signal(SIGALRM, SIG_IGN);
+
 			/*sacar bolas*/
 			for(i=0;i<10;i++){
 				if(partida[i]!=NULL){
@@ -149,8 +154,9 @@ main(int argc, char* argv[]){
 							}
 						}
 					}
+
 				}
-			}
+			}/*endfor*/
 
 			sacar = 0;
 			signal(SIGALRM, sacar_bolas);
@@ -201,7 +207,28 @@ main(int argc, char* argv[]){
 						fgets(buffer, sizeof(buffer), stdin);
 
 						if(strcmp(buffer,"SALIR\n") == 0){
+
+							i=0;
+							while(i<10){
+								if(partida[i]!=NULL){
+									free(partida[i]);
+									partida[i]=NULL;
+								}
+								i++;
+							}
+
+
 							// enviar a todos los clientes salir
+							i=0;
+							while(i<40){
+								if(jugador[i]!=NULL){
+									send(jugador[i]->id,"SALIR",5,0);
+									free(jugador[i]);
+									jugador[i]=NULL;
+								}
+								i++;
+							}
+
 
 							close(sd);
 							exit(-1);
@@ -221,74 +248,91 @@ main(int argc, char* argv[]){
 							}
 						}
 					}
+
 					else{
 						bzero(buffer, sizeof(buffer));
 						recibidos = recv(i,buffer,sizeof(buffer),0);
 
+
 						if(recibidos>0){
 							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
-							printf("%s",buffer);
+							printf("Comando: *%s*",pch);
+							if(pch!=NULL){
 
-
-							if(strcmp(pch,"USUARIO")==0){
-								ret=buscar_jugador(jugador,i);
-
-								if(ret!=-1 && jugador[ret]!=NULL){
-									bzero(jugador[ret]->username, sizeof(jugador[ret]->username));
-									bzero(identificador, sizeof(identificador));
-
+								if(strcmp(pch,"USUARIO")==0){
 									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
-
-									/*comprobar que el username esta registradon el el fichero*/
-									if(jugador_registrado(pch)==1){
-
-										/*copio cadena despues del primer espacio en username->jugador*/
-										strcpy(jugador[ret]->username, pch);
-										/*sprintf(identificador,"slot:%d socket:%d #%s#",ret,jugador[ret]->id,jugador[ret]->username);*/
-										strcpy(buffer,"+Ok. Usuario correcto.");
+									if(pch==NULL || strlen(pch)==0){
+										strcpy(buffer,"-ERR. Comando incorrecto.\n");
 										send(i,buffer,strlen(buffer),0);
 									}
 									else{
-										strcpy(buffer,"-ERR. Usuario incorrecto.\n");
-										send(i,buffer,strlen(buffer),0);
-									}
+										ret=buscar_jugador(jugador,i);
 
+										if(ret!=-1 && jugador[ret]!=NULL){
+
+											/*comprobar que el username esta registradon el el fichero*/
+											if(jugador_registrado(pch)){
+
+												/*copio cadena despues del primer espacio en username->jugador*/
+												strcpy(jugador[ret]->username, pch);
+												/*sprintf(identificador,"slot:%d socket:%d #%s#",ret,jugador[ret]->id,jugador[ret]->username);*/
+												strcpy(buffer,"+Ok. Usuario correcto.");
+												send(i,buffer,strlen(buffer),0);
+
+											}
+											else{
+												strcpy(buffer,"-ERR. Usuario incorrecto.\n");
+												send(i,buffer,strlen(buffer),0);
+											}
+
+										}
+
+									}					
 								}
-							}
 
-							/*si recibo password y es correcta, hago login del usuario*/
-							if(strcmp(pch,"PASSWORD")==0){
-								ret=buscar_jugador(jugador,i);
-								if(ret!=-1 && jugador[ret]!=NULL){
+								/*si recibo password y es correcta, hago login del usuario*/
+								else if(strcmp(pch,"PASSWORD")==0){
+									ret=buscar_jugador(jugador,i);
 									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
-
-									/*intento login, informar del resultado*/
-									if(jugador_login(&jugador[ret],pch) > 0){
-										sprintf(buffer,"+Ok. Se ha logeado como %s",jugador[ret]->username);
-										printf("Error pass #%s# por %d\n",pch,i);
-										send(i,buffer,strlen(buffer),0);
-									}
-									else{
-										printf("ERROR #%s# por %d\n",pch,i);
+									if(pch==NULL || strlen(pch)==0){
 										strcpy(buffer,"-ERR. Contraseña incorrecta.");
 										send(i,buffer,strlen(buffer),0);
 									}
-
-								}
-							}
-
-							/*registrar usuario*/
-							if(strcmp(pch,"REGISTER")==0){
-								if(strcmp(strtok(NULL," "),"-u")==0){
-									strcpy(reg_username, strtok(NULL, " "));
-									if(strcmp(strtok(NULL, " "),"-p")==0){
-										strcpy(reg_pass, strtok(NULL," \n"));
-										if(jugador_registrar(reg_username, reg_pass)>0){
-											strcpy(buffer,"+Ok. Usuario registrado correctamente");
+									else if(ret!=-1 && jugador[ret]!=NULL){
+										/*intento login, informar del resultado*/
+										if(jugador_login(&jugador[ret],pch) > 0){
+											sprintf(buffer,"+Ok. Se ha logeado como %s",jugador[ret]->username);
 											send(i,buffer,strlen(buffer),0);
 										}
 										else{
-											strcpy(buffer,"-Err. No se pudo registrar el usuario");
+											strcpy(buffer,"-ERR. Contraseña incorrecta.");
+											send(i,buffer,strlen(buffer),0);
+										}
+									}
+									else{
+										strcpy(buffer,"-ERR. No estas conectado");
+										send(i,buffer,strlen(buffer),0);
+									}
+								}
+
+								/*registrar usuario*/
+								else if(strcmp(pch,"REGISTER")==0){
+									if(strcmp(strtok(NULL," "),"-u")==0){
+										strcpy(reg_username, strtok(NULL, " "));
+										if(strcmp(strtok(NULL, " "),"-p")==0){
+											strcpy(reg_pass, strtok(NULL," \n"));
+											if(jugador_registrar(reg_username, reg_pass)>0){
+												strcpy(buffer,"+Ok. Usuario registrado correctamente");
+												send(i,buffer,strlen(buffer),0);
+											}
+											else{
+												strcpy(buffer,"-Err. No se pudo registrar el usuario");
+												send(i,buffer,strlen(buffer),0);
+											}
+										}
+										else{
+											/*error*/
+											strcpy(buffer,"-Err. Comando desconocido");
 											send(i,buffer,strlen(buffer),0);
 										}
 									}
@@ -297,150 +341,176 @@ main(int argc, char* argv[]){
 										strcpy(buffer,"-Err. Comando desconocido");
 										send(i,buffer,strlen(buffer),0);
 									}
-								}
-								else{
-									/*error*/
-									strcpy(buffer,"-Err. Comando desconocido");
-									send(i,buffer,strlen(buffer),0);
+
+									bzero(reg_username,sizeof(reg_username));
+									bzero(reg_pass,sizeof(reg_pass));
 								}
 
-								bzero(reg_username,sizeof(reg_username));
-								bzero(reg_pass,sizeof(reg_pass));
-							}
+								/*enviar su carton a jugador*/
+								else if(strcmp(pch,"CARTON")==0){
 
-							/*enviar su carton a jugador*/
-							if(strcmp(pch,"CARTON")==0){
-								ret=buscar_jugador(jugador,i);
-								if(ret==-1 || jugador[ret]==NULL){
-									strcpy(buffer,"-Err. no tienes carton\n");
-									send(i,buffer,strlen(buffer),0);
-								}
-								else{
-									if(jugador[ret]->id_partida == -1){
-										/*no esta en partida*/
-										strcpy(buffer,"-Err. no estas jugando\n");
+									ret=buscar_jugador(jugador,i);
+									printf("Jugador:%d\n",ret);
+									if(ret==-1){
+										strcpy(buffer,"-Err. no tienes carton\n");
 										send(i,buffer,strlen(buffer),0);
+									}
+
+									else if(jugador[ret]==NULL){
+										strcpy(buffer,"-Err. no tienes carton\n");
+										send(i,buffer,strlen(buffer),0);
+									}
+
+									else if(jugador[ret]->id_partida == -1){
+											/*no esta en partida*/
+											strcpy(buffer,"-Err. no estas jugando\n");
+											send(i,buffer,strlen(buffer),0);
 									}
 									else{
 										/*esta en una partida*/
-										strcpy(buffer,"**");
-										carton_str(&buffer,jugador[ret]->carton);
+										carton_str(micarton,jugador[ret]->carton);
+										send(i,micarton,strlen(micarton),0);			
+									}		
+								}
+
+								/**
+								 * Un cliente quiere salir
+								 * Sale de partida si esta en una
+								 * Se saca de su slot
+								 */
+								else if(strcmp(pch,"SALIR")==0){
+									ret = buscar_jugador(jugador,i);
+									if(ret!=-1){
+										if(jugador[ret]!=NULL){
+											partida_sacar_jugador(&(partida[jugador[ret]->id_partida]),jugador[ret]->id);
+											free(jugador[ret]);
+											jugador[ret]=NULL;
+										}
+									}
+								}
+
+								else if(strcmp(pch,"INICIAR-PARTIDA")==0){
+
+									bzero(buffer,sizeof(buffer));
+
+									ret=buscar_jugador(jugador,i);
+									if(ret!=-1){
+										if(jugador[ret]!=NULL){
+
+											jugador[ret]->id_partida = buscar_partida(partida,jugador[ret]);
+											if(jugador[ret]->id_partida == -1){
+												/*no se pudo asignar partida: mandar mensaje de error.*/
+
+												strcpy(buffer,"-ERR. No hay partidas disponibles.");
+												send(i,buffer,strlen(buffer),0);
+											}
+											else{
+												printf("Intentado iniciar partida %d",jugador[ret]->id_partida);
+												jugador[ret]->listo = 1;
+												/*Si estan los cuatro jugadores listos, marcar para iniciar*/
+												if(partida[jugador[ret]->id_partida]->njugadores == 4){
+													todos_listos=1;
+													for(j=0;j<4;j++){
+														if(partida[jugador[ret]->id_partida]->jugadores[j]->listo == 0){
+															todos_listos=0;
+															break;
+														}
+													}
+													if(todos_listos==0){
+														/*no estan todos listos, informar*/
+														sprintf(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
+														send(i,buffer,strlen(buffer),0);
+													}
+													else{
+														/*estan todos listos, informar y marcar para iniciar*/
+
+														partida[jugador[ret]->id_partida]->iniciada = 1;
+														printf("inciando partida");
+														strcpy(buffer,"+Ok. Empieza la partida");
+														for(j=0;j<4;j++){ /*a todos los miembros de la partida*/
+															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,
+																	 buffer,strlen(buffer),0);
+														}
+													}
+												}
+												else{
+													/*no estan todos*/
+													strcpy(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
+													send(i,buffer,strlen(buffer),0);
+
+												}
+											}
+
+										}
+									}
+									else{
+										/*error no esta conectado*/
+										strcpy(buffer,"-Err. No estas conectado.");
 										send(i,buffer,strlen(buffer),0);
 									}
 								}
-							}
 
-							if(strcmp(pch,"INICIAR-PARTIDA")==0){
+								else if(strcmp(buffer,"ID")==0){
+									bzero(identificador,sizeof(identificador));
+									sprintf(identificador,"%d",i);
+									send(i,identificador,strlen(identificador),0);
+								}
 
-								bzero(buffer,sizeof(buffer));
+								else if(strcmp(buffer,"WHO")==0){
+									ret = buscar_jugador(jugador,i);
+									sprintf(identificador,"slot:%d socket:%d user:%s",ret,i,jugador[ret]->username);
+									if(ret!=-1 && jugador[ret]!=NULL){
+												//send(i,jugador[ret]->username,strlen(jugador[ret]->username),0);
+										send(i,identificador,strlen(identificador),0);
 
-								ret=buscar_jugador(jugador,i);
-								if(ret!=-1){
-									if(jugador[ret]!=NULL){
+									}
+									else{
+										send(i,"DESCONOCIDO",11,0);
+									}
+								}
 
-										jugador[ret]->id_partida = buscar_partida(partida,jugador[ret]);
-										if(jugador[ret]->id_partida == -1){
-											/*no se pudo asignar partida: mandar mensaje de error.*/
+								else if(strcmp(buffer,"PARTIDA")==0){
+									bzero(buffer,sizeof(buffer));
 
-											strcpy(buffer,"-ERR. No hay partidas disponibles.");
-											send(i,buffer,strlen(buffer),0);
-										}
-										else{
-											printf("Intentado iniciar partida %d",jugador[ret]->id_partida);
-											jugador[ret]->listo = 1;
-											/*Si estan los cuatro jugadores listos, marcar para iniciar*/
-											if(partida[jugador[ret]->id_partida]->njugadores == 4){
-												todos_listos=1;
-												for(j=0;j<4;j++){
-													if(partida[jugador[ret]->id_partida]->jugadores[j]->listo == 0){
-														todos_listos=0;
-														break;
-													}
-												}
-												if(todos_listos==0){
-													/*no estan todos listos, informar*/
-													sprintf(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
+									ret=buscar_jugador(jugador,i);
+									if(ret!=-1){
+										if(jugador[ret]->id_partida != -1){
+
+											for(j=0;j<4;j++){
+												if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL){
+													sprintf(buffer, "\n%d\t%s\t%d",j, partida[jugador[ret]->id_partida]->jugadores[j]->username,
+																											 partida[jugador[ret]->id_partida]->jugadores[j]->listo);
+
 													send(i,buffer,strlen(buffer),0);
 												}
 												else{
-													/*estan todos listos, informar y marcar para iniciar*/
-
-													partida[jugador[ret]->id_partida]->iniciada = 1;
-													printf("inciando partida");
-													strcpy(buffer,"+Ok. Empieza la partida");
-													for(j=0;j<4;j++){ /*a todos los miembros de la partida*/
-														send(partida[jugador[ret]->id_partida]->jugadores[j]->id,
-																 buffer,strlen(buffer),0);
-													}
+													sprintf(buffer, "\n%d\tVACIO",j);
+													send(i,buffer,strlen(buffer),0);
 												}
 											}
-											else{
-												/*no estan todos*/
-												strcpy(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
-												send(i,buffer,strlen(buffer),0);
 
-											}
+
+
+										}else{
+											strcpy(buffer,"-ERR. No estas en ninguna partida");
+											send(i,buffer,strlen(buffer),0);
 										}
-
-									}
-								}
-								else{
-									/*error no esta conectado*/
-									strcpy(buffer,"-Err. No estas conectado.");
-									send(i,buffer,strlen(buffer),0);
-								}
-							}
-
-							if(strcmp(buffer,"ID")==0){
-								bzero(identificador,sizeof(identificador));
-								sprintf(identificador,"%d",i);
-								send(i,identificador,strlen(identificador),0);
-							}
-
-							if(strcmp(buffer,"WHO")==0){
-								ret = buscar_jugador(jugador,i);
-								sprintf(identificador,"slot:%d socket:%d user:%s",ret,i,jugador[ret]->username);
-								if(ret!=-1 && jugador[ret]!=NULL){
-											//send(i,jugador[ret]->username,strlen(jugador[ret]->username),0);
-									send(i,identificador,strlen(identificador),0);
-
-								}
-								else{
-									send(i,"DESCONOCIDO",11,0);
-								}
-							}
-
-							if(strcmp(buffer,"PARTIDA")==0){
-								bzero(buffer,sizeof(buffer));
-
-								ret=buscar_jugador(jugador,i);
-								if(ret!=-1){
-									if(jugador[ret]->id_partida != -1){
-
-										for(j=0;j<4;j++){
-											if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL){
-												sprintf(buffer, "\n%d\t%s\t%d",j, partida[jugador[ret]->id_partida]->jugadores[j]->username,
-																										 partida[jugador[ret]->id_partida]->jugadores[j]->listo);
-
-												send(i,buffer,strlen(buffer),0);
-											}
-											else{
-												sprintf(buffer, "\n%d\tVACIO",j);
-												send(i,buffer,strlen(buffer),0);
-											}
-										}
-
-
-
 									}else{
-										strcpy(buffer,"-ERR. No estas en ninguna partida");
+										strcpy(buffer,"-ERR. No estas conectado");
 										send(i,buffer,strlen(buffer),0);
 									}
-								}else{
-									strcpy(buffer,"-ERR. No estas conectado");
-									send(i,buffer,strlen(buffer),0);
 								}
 
+								/*COMANDO INCORRECTO*/
+								else{
+									strcpy(buffer,"-ERR. Comando desconocido");
+									send(i,buffer,strlen(buffer),0);
+
+								}
+							}
+							else{
+								strcpy(buffer,"-ERR. Comando incorrecto.\n");
+								send(i,buffer,strlen(buffer),0);
 							}
 						}
 					}
@@ -461,6 +531,7 @@ return EXIT_SUCCESS;
 
 void manejador(int signum){
 	/*indicar a clientes que se cierren*/
+
 }
 
 void sacar_bolas(int signum){

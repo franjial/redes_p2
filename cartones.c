@@ -135,11 +135,12 @@ void carton_print(int carton[3][9]){
   }
 }
 
-void carton_str(char** buffer, int carton[3][9]){
+/*
+void carton_str(char buffer[250], int carton[3][9]){
   int i,j;
   char aux[4];
 
-  strcpy(*buffer,"CARTON|");
+  strcpy(buffer,"CARTON|");
   for(i=0;i<3;i++){
     for(j=0;j<9;j++){
       if(carton[i][j]==-1){
@@ -147,7 +148,23 @@ void carton_str(char** buffer, int carton[3][9]){
       }else{
         sprintf(aux,"Num. %d, ",carton[i][j]);
       }
-      strcat(*buffer,aux);
+      strcat(buffer,aux);
+      bzero(aux,sizeof(aux));
     }
   }
+}
+*/
+
+
+void carton_str(char buffer[250], int carton[3][9]){
+  int i,j;
+  char aux[4];
+
+  strcpy(buffer,"CARTON|");
+  for(i=0;i<3;i++){
+    for(j=0;j<9;j++){
+      sprintf(buffer,"%sNum.%d, ",buffer,carton[i][j]);
+    }
+  }
+  
 }
