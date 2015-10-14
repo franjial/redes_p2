@@ -47,14 +47,59 @@ int partida_bingo(Partida* partida, Jugador* jugador){
 	return 1;
 }
 
+/**
+ * Comprueba si el jugador tiene una linea y es el
+ * primero en cantarla. En ese caso, devuelve 1.
+ * En caso contrario devuelve 0.
+ */
 int partida_linea(Partida* partida, Jugador* jugador){
+	int i,j;
+	int test=1;
+
+	if(partida==NULL) return 0;
+	if(jugador==NULL) return 0;
+	if(partida->ganador_linea != NULL) return 0;
+
+	for(i=0;i<4;i++){
+		for(j=0;j<9;j++){
+			if(!bombo_find(partida->fuera, jugador->carton[i][j]))
+				test=0;
+		}
+		if(test==1){
+			/*hay linea*/
+			return 1;
+		}
+	}
+
 
 	return 0;
 }
 
 int partida_slinea(Partida* partida, Jugador* jugador){
+	int i,j;
+	int test=1;
+	int c=0; /*cuenta lineas*/
 
-	return 0;
+	if(partida==NULL) return 0;
+	if(jugador==NULL) return 0;
+	if(partida->ganador_linea == NULL) return 0;
+	if(partida->ganador_slinea != NULL) return 0;
+
+	for(i=0;i<4;i++){
+		for(j=0;j<9;j++){
+			if(!bombo_find(partida->fuera, jugador->carton[i][j]))
+				test=0;
+		}
+		if(test==1){
+			/*hay linea*/
+			c++;
+		}
+	}
+
+	if(c > 1)
+		return 1;
+	else
+		return 0;
 }
 
 int partida_ingresar(Partida** partida, Jugador** jugador){
