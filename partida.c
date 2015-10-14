@@ -75,6 +75,11 @@ int partida_linea(Partida* partida, Jugador* jugador){
 	return 0;
 }
 
+/**
+ * Comprueba si el jugador tiene una segunda linea y ha sido
+ * el primero en cantarla en la partida. Si es asi, devuelve 1
+ * en caso contrario devuelve 0.
+ */
 int partida_slinea(Partida* partida, Jugador* jugador){
 	int i,j;
 	int test=1;

@@ -504,6 +504,42 @@ main(int argc, char* argv[]){
 									}
 								}
 
+								else if(strcmp(buffer,"LINEA")==0){
+									ret = buscar_jugador(jugador,i);
+									if(ret!=-1){
+										if(jugador[ret]!=NULL){
+											if(jugador[ret]->id_partida != -1){
+												// comprobar si es linea y responder
+												if(partida_linea(partida[jugador[ret]->id_partida], jugador[ret])){
+													sprintf(buffer,"+Ok. Linea de %s",jugador[ret]->username);
+													partida[jugador[ret]->id_partida]->ganador_linea = jugador[ret];
+													for(j=0;j<4;j++){
+														if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL) /*responder a los que esten en partida*/
+															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,buffer,strlen(buffer),0);
+													}
+
+												}
+												else{
+													strcpy(buffer,"-Err. No procede");
+													send(i,buffer,strlen(buffer),0);
+												}
+											}
+											else{
+												strcpy(buffer,"-Err. No hay partida.");
+												send(i,buffer,strlen(buffer),0);
+											}
+										}
+										else{
+											strcpy(buffer,"-Err. No procede.");
+											send(i,buffer,strlen(buffer),0);
+										}
+									}
+									else{
+										strcpy(buffer,"-Err. No procede.");
+										send(i,buffer,strlen(buffer),0);
+									}
+								}
+
 								else if(strcmp(buffer,"PARTIDA")==0){
 									bzero(buffer,sizeof(buffer));
 
