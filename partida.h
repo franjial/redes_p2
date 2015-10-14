@@ -20,9 +20,11 @@ struct partida{
 
 int partida_nueva(int id, Partida** partida);
 int partida_sacar(Partida** partida); /*sacar bola*/
-int partida_bingo(Partida** partida, Jugador* jugador); /*comprueba bingo*/
-int partida_linea(Partida** partida, Jugador* jugador); /*comprueba linea*/
-int partida_slinea(Partida** partida, Jugador* jugador); /*comprueba segunda linea*/
+
+int partida_bingo(Partida* partida, Jugador* jugador); /*comprueba bingo*/
+int partida_linea(Partida* partida, Jugador* jugador); /*comprueba linea*/
+int partida_slinea(Partida* partida, Jugador* jugador); /*comprueba segunda linea*/
+
 int partida_ingresar(Partida** partida, Jugador** jugador); /*ingresa un jugador*/
 int partida_clean(Partida** partida);
 

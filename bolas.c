@@ -13,7 +13,7 @@ void bombo_gen(Bola **bombo, int len, int desde){
   (*bombo)->next = NULL;
   (*bombo)->num = i;
   cursor = *bombo;
-  
+
   for(i=desde+1;i < len;i++){
     cursor->next = (Bola *) malloc(sizeof(Bola));
     cursor = cursor->next;
@@ -26,7 +26,7 @@ void bombo_gen(Bola **bombo, int len, int desde){
   cursor = cursor->next;
   cursor->next = *bombo;
   cursor->num = i++;
-  
+
 }
 
 /**
@@ -65,7 +65,7 @@ void generar(Bola **bombo,int* len){
 int bombo_size(Bola *bombo){
   Bola* cursor = bombo;
   int i = 1;
-  
+
   /*sale si vacio o llega a ultima bola*/
   while(cursor->next != bombo && cursor != NULL){
     cursor = cursor->next;
@@ -92,7 +92,7 @@ int bombo_pop(Bola **bombo,int *len){
 		return -1;
 	}
 
-	
+
 	/*si solo hay una bola*/
 	if(*bombo == (*bombo)->next){
 	  num = (*bombo)->num;
@@ -118,7 +118,7 @@ int bombo_pop(Bola **bombo,int *len){
 	for(i=0;i<pos-1;i++){
 	  cursor = cursor->next;
 	}
-	
+
 	padre = cursor;
 	cursor = cursor->next;
 	sucesor = cursor->next;
@@ -138,7 +138,7 @@ int bombo_pop(Bola **bombo,int *len){
 
 
 /**
- * Vacia el bombo. Devuelve bolas sacadas 
+ * Vacia el bombo. Devuelve bolas sacadas
  */
 int bombo_clean(Bola **bombo){
 
@@ -157,7 +157,7 @@ int bombo_clean(Bola **bombo){
 
   *bombo = (*bombo)->next;
   cursor = (*bombo);
-  while(head != head->next->next){ /*mientras queden mas de dos bolas*/  
+  while(head != head->next->next){ /*mientras queden mas de dos bolas*/
     cursor = cursor->next;
     free(*bombo);
     head->next=cursor;
@@ -189,5 +189,31 @@ void print_bombo(Bola *bombo){
 			cursor=cursor->next;
 		}
 		printf("%d\n",cursor->num);
+	}
+}
+
+/**
+ * devuelve 1 si num esta en el bombo, 0 en caso
+ * contrario.
+ */
+int bombo_find(Bola *bombo, int num){
+	Bola *cursor = bombo;
+
+	if(bombo==NULL){
+		/*bombo vacio*/
+		return 0;
+	}
+	else{
+		while(bombo != cursor->next){
+			/*recorro toda la lista*/
+			if(cursor->num != num)
+				return 0;
+			cursor=cursor->next;
+		}
+		/*test de la ultima posicion*/
+		if(cursor->num == num)
+			return 1;
+		else
+			return 0;
 	}
 }

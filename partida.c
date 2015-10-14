@@ -22,19 +22,39 @@ int partida_sacar(Partida** partida){
 	return bombo_pop(&(*partida)->bombo, NULL);
 }
 
-int partida_bingo(Partida** partida, Jugador* jugador){
+/**
+ * Comprueba si un jugador tiene bingo en una partida
+ * devuelve 1 si tiene bingo, 0 en caso contrario.
+ * -1 si error
+ */
+int partida_bingo(Partida* partida, Jugador* jugador){
+	int i,j;
+
+	if(partida == NULL)
+		return -1;
+
+	if(jugador == NULL)
+		return -1;
+
+	for(i=0;i<4;i++){
+		for(j=0;j<9;i++){
+			if(!bombo_find(partida->fuera, jugador->carton[i][j])){
+				/*no bingo*/
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+int partida_linea(Partida* partida, Jugador* jugador){
 
 	return 0;
 }
 
-int partida_linea(Partida** partida, Jugador* jugador){
-	(*partida)->ganador_linea = jugador;
-	return 1;
-}
+int partida_slinea(Partida* partida, Jugador* jugador){
 
-int partida_slinea(Partida** partida, Jugador* jugador){
-	(*partida)->ganador_slinea = jugador;
-	return 1;
+	return 0;
 }
 
 int partida_ingresar(Partida** partida, Jugador** jugador){

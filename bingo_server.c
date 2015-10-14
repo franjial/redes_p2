@@ -475,7 +475,7 @@ main(int argc, char* argv[]){
 										if(jugador[ret]!=NULL){
 											if(jugador[ret]->id_partida != -1){
 												// comprobar si es bingo y responder (si bingo cerrar partida)
-												if(partida_bingo(&partida[jugador[ret]->id_partida], jugador[ret])){
+												if(partida_bingo(partida[jugador[ret]->id_partida], jugador[ret])){
 													sprintf(buffer,"+Ok. Bingo de %s",jugador[ret]->username);
 													for(j=0;j<4;j++){
 														if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL) /*responder a los que esten en partida*/
