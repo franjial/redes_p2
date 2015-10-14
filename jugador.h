@@ -5,7 +5,7 @@
 
 typedef
 struct jugador{
-	int id;
+	int id; /*descriptor socket*/
 	int carton[3][9];
 	char username[40];
 	int id_partida; /*id partida asignada, -1 si en ninguna*/

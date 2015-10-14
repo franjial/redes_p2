@@ -6,14 +6,14 @@
 
 
 int partida_nueva(int id, Partida** partida){
-	
+
 
 	*partida = (Partida *) malloc(sizeof(Partida));
 	(*partida)->iniciada = 0;
 
 	bombo_gen( &((*partida)->bombo), 90, 1);
 	(*partida)->fuera = NULL;
-	(*partida)->id = id; 
+	(*partida)->id = id;
 	(*partida)->njugadores = 0;
 
 }
@@ -23,8 +23,8 @@ int partida_sacar(Partida** partida){
 }
 
 int partida_bingo(Partida** partida, Jugador* jugador){
-	(*partida)->ganador_bingo = jugador;
-	return 1;
+
+	return 0;
 }
 
 int partida_linea(Partida** partida, Jugador* jugador){
@@ -56,7 +56,7 @@ int partida_ingresar(Partida** partida, Jugador** jugador){
 int partida_clean(Partida** partida){
 	int i,j;
 
-	bombo_clean( &(*partida)->bombo ); //limpiar bombo 
+	bombo_clean( &(*partida)->bombo ); //limpiar bombo
 	bombo_clean( &(*partida)->fuera ); //limpiar bombo bolas sacadas
 
 	for(i=0;i<4;i++){
@@ -70,7 +70,7 @@ int partida_clean(Partida** partida){
 
 }
 
-/** 
+/**
  * Sacar jugador de una partida si esta dentro de ella
  */
 int partida_sacar_jugador(Partida** partida, int id_jugador){

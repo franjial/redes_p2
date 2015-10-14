@@ -287,7 +287,7 @@ main(int argc, char* argv[]){
 
 										}
 
-									}					
+									}
 								}
 
 								/*si recibo password y es correcta, hago login del usuario*/
@@ -369,8 +369,8 @@ main(int argc, char* argv[]){
 									else{
 										/*esta en una partida*/
 										carton_str(micarton,jugador[ret]->carton);
-										send(i,micarton,strlen(micarton),0);			
-									}		
+										send(i,micarton,strlen(micarton),0);
+									}
 								}
 
 								/**
@@ -466,6 +466,41 @@ main(int argc, char* argv[]){
 									}
 									else{
 										send(i,"DESCONOCIDO",11,0);
+									}
+								}
+
+								else if(strcmp(buffer,"BINGO")==0){
+									ret = buscar_jugador(jugador,i);
+									if(ret!=-1){
+										if(jugador[ret]!=NULL){
+											if(jugador[ret]->id_partida != -1){
+												// comprobar si es bingo y responder (si bingo cerrar partida)
+												if(partida_bingo(&partida[jugador[ret]->id_partida], jugador[ret])){
+													sprintf(buffer,"+Ok. Bingo de %s",jugador[ret]->username);
+													for(j=0;j<4;j++){
+														if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL) /*responder a los que esten en partida*/
+															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,buffer,strlen(buffer),0);
+													}
+													partida_clean(&partida[jugador[ret]->id_partida]);
+												}
+												else{
+													strcpy(buffer,"-Err. No procede");
+													send(i,buffer,strlen(buffer),0);
+												}
+											}
+											else{
+												strcpy(buffer,"-Err. No hay partida.");
+												send(i,buffer,strlen(buffer),0);
+											}
+										}
+										else{
+											strcpy(buffer,"-Err. No procede.");
+											send(i,buffer,strlen(buffer),0);
+										}
+									}
+									else{
+										strcpy(buffer,"-Err. No procede.");
+										send(i,buffer,strlen(buffer),0);
 									}
 								}
 
