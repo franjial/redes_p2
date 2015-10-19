@@ -59,7 +59,7 @@ main(int argc, char* argv[]){
 			}
 
 			else{
-				printf("\nSERVIDOR: %s\n",buffer);
+				printf("\n%s\n",buffer);
 			}
 
 		}else{ /*informacion por teclado*/
@@ -73,7 +73,7 @@ main(int argc, char* argv[]){
 			if(strlen(buffer)>0 && strcmp(buffer,"\n")!=0){
 				send(sd,buffer,sizeof(buffer),0);
 			}
-			
+
 		}
 
 	}while(fin==0);

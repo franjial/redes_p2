@@ -19,6 +19,7 @@
 #define MAX_PARTIDAS 10
 
 static int sacar = 0; /*si esta a uno se saca bola en partidas*/
+static int salir = 0;
 
 /**
  * - Maximo 4 jugadores/partida
@@ -192,7 +193,7 @@ main(int argc, char* argv[]){
 
 								/*le asigno al nuevo jugador su numero de socket*/
 								jugador[ret]->id = new_sd;
-								printf("Nuevo jugador id %d en slot %d \n",new_sd,ret);
+
 								FD_SET(new_sd, &readfds);
 								strcpy(buffer,"+Ok. Usuario conectado");
 								send(new_sd, buffer, strlen(buffer),0);
@@ -206,7 +207,7 @@ main(int argc, char* argv[]){
 						bzero(buffer, sizeof(buffer));
 						fgets(buffer, sizeof(buffer), stdin);
 
-						if(strcmp(buffer,"SALIR\n") == 0){
+						if(strcmp(buffer,"SALIR\n") == 0 || salir == 1){
 
 							i=0;
 							while(i<10){
@@ -256,7 +257,7 @@ main(int argc, char* argv[]){
 
 						if(recibidos>0){
 							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
-							printf("Comando: *%s*",pch);
+
 							if(pch!=NULL){
 
 								if(strcmp(pch,"USUARIO")==0){
@@ -350,7 +351,7 @@ main(int argc, char* argv[]){
 								else if(strcmp(pch,"CARTON")==0){
 
 									ret=buscar_jugador(jugador,i);
-									printf("Jugador:%d\n",ret);
+
 									if(ret==-1){
 										strcpy(buffer,"-Err. no tienes carton\n");
 										send(i,buffer,strlen(buffer),0);
@@ -405,7 +406,6 @@ main(int argc, char* argv[]){
 												send(i,buffer,strlen(buffer),0);
 											}
 											else{
-												printf("Intentado iniciar partida %d",jugador[ret]->id_partida);
 												jugador[ret]->listo = 1;
 												/*Si estan los cuatro jugadores listos, marcar para iniciar*/
 												if(partida[jugador[ret]->id_partida]->njugadores == 4){
@@ -425,7 +425,7 @@ main(int argc, char* argv[]){
 														/*estan todos listos, informar y marcar para iniciar*/
 
 														partida[jugador[ret]->id_partida]->iniciada = 1;
-														printf("inciando partida");
+
 														strcpy(buffer,"+Ok. Empieza la partida");
 														for(j=0;j<4;j++){ /*a todos los miembros de la partida*/
 															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,
@@ -628,8 +628,7 @@ return EXIT_SUCCESS;
 
 
 void manejador(int signum){
-	/*indicar a clientes que se cierren*/
-
+	salir = 1;
 }
 
 void sacar_bolas(int signum){
