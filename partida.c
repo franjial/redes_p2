@@ -110,11 +110,12 @@ int partida_slinea(Partida* partida, Jugador* jugador){
 int partida_ingresar(Partida** partida, Jugador** jugador){
 	if((*partida)->njugadores>=4)
 		return -1;
+
 	carton_nuevo((*jugador)->carton);
 	(*partida)->jugadores[(*partida)->njugadores] = *jugador;
 	(*partida)->njugadores++;
-	return (*partida)->njugadores;
 
+	return (*partida)->njugadores;
 }
 
 
@@ -142,6 +143,8 @@ int partida_clean(Partida** partida){
 
 /**
  * Sacar jugador de una partida si esta dentro de ella
+ * Modifica: jugador con id_jugador dentro de partida
+ *           njugadores: si saca un jugador de partida actualiza valor de njugadores
  */
 int partida_sacar_jugador(Partida** partida, int id_jugador){
 	int i;
@@ -151,10 +154,15 @@ int partida_sacar_jugador(Partida** partida, int id_jugador){
 	}
 
 	for(i=0;i<4;i++){
-		if((*partida)->jugadores[i]->id==id_jugador){
-			(*partida)->jugadores[i]=NULL;
-			return 1;
+		if( (*partida)->jugadores[i] != NULL ){
+			if( (*partida)->jugadores[i]->id == id_jugador ){
+				(*partida)->jugadores[i]=NULL;
+				(*partida)->njugadores--;
+				return 1;
+			}
 		}
+
 	}
+
 	return 0;
 }

@@ -469,6 +469,33 @@ main(int argc, char* argv[]){
 									}
 								}
 
+								else if(strcmp(buffer,"PISTA")==0){
+									ret = buscar_jugador(jugador, i);
+									if(ret != -1 && jugador[ret]!=NULL){
+										if(partida_linea(partida[jugador[ret]->id_partida], jugador[ret])){
+											strcpy(buffer,"TIENES LINEA!");
+											send(i,buffer,strlen(buffer),0);
+										}
+
+										else if(partida_slinea(partida[jugador[ret]->id_partida], jugador[ret])){
+											strcpy(buffer,"TIENES SEGUNDA LINEA!");
+											send(i,buffer,strlen(buffer),0);
+										}
+
+										else if(partida_bingo(partida[jugador[ret]->id_partida], jugador[ret])){
+											strcpy(buffer,"TIENES BINGO!");
+											send(i,buffer,strlen(buffer),0);
+										}
+
+										else{
+											strcpy(buffer,"NO TIENES NADA :(");
+											send(i,buffer,strlen(buffer),0);
+										}
+
+									}
+
+								}
+
 								else if(strcmp(buffer,"BINGO")==0){
 									ret = buscar_jugador(jugador,i);
 									if(ret!=-1){
@@ -620,10 +647,10 @@ void sacar_bolas(int signum){
 int buscar_partida(Partida* partida[10], Jugador* jugador){
 	int i;
 
-	/*primero buscamos salas con gente*/
+	/*primero buscamos salas con gente QUE NO ESTEN INICIADAS*/
 	for(i=0;i<10;i++){
 		if(partida[i]!=NULL){
-			if( partida[i]->njugadores < 4 ){
+			if( partida[i]->njugadores < 4  && partida[i]->iniciada == 0){
 				partida_ingresar(&partida[i], &jugador);
 				return i;
 			}
