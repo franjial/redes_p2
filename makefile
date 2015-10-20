@@ -24,8 +24,8 @@ test_bolas.o : test_bolas.c
 test_jugador.o : test_jugador.c
 	gcc -g -c test_jugador.c -lcunit -g
 
-bingo_server.o : bingo_server.c
-	gcc -g -c bingo_server.c partida.h jugador.h cartones.h
+bingo_server.o : bingo_server.c bingo_server.h partida.h jugador.h cartones.h
+	gcc -g -c bingo_server.c bingo_server.h partida.h jugador.h cartones.h
 
 bolas.o : bolas.c bolas.h
 	gcc -g -c bolas.c bolas.h

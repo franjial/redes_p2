@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "bingo_server.h"
 #include "partida.h"
 #include "jugador.h"
 #include "cartones.h"
@@ -12,27 +14,6 @@
 #include <netdb.h>
 
 #include <signal.h>
-
-
-#define MSG_SIZE 250
-#define MAX_CLIENTS 40
-#define MAX_PARTIDAS 10
-
-static int sacar = 0; /*si esta a uno se saca bola en partidas*/
-static int salir = 0;
-
-/**
- * - Maximo 4 jugadores/partida
- * - Maximo 10 partidas
- * - Maximo 1 carton por jugador
- */
-
-void manejador(int signum);
-void sacar_bolas(int signum);
-
-int buscar_partida(Partida* partida[10], Jugador* jugador);
-int ingresar_jugador(Jugador* jugador[40]);
-int buscar_jugador(Jugador* j[],int id);
 
 int
 main(int argc, char* argv[]){
@@ -699,4 +680,82 @@ int buscar_jugador(Jugador* j[],int id){
 		}
 	}
 	return -1;
+}
+
+
+/**
+ * cmd_ini inicializa la lista enlazada de comandos
+ */
+void cmd_ini(Command** cmd_head){
+	(*cmd_head) = NULL;
+}
+
+/**
+ * cmd_reg introduce un nuevo comando en la lista
+ */
+void cmd_reg(Command** cmd_head, const char *str, void (*cb)(int sd)){
+	Command *aux;
+
+
+	if(*cmd_head == NULL){
+		/*registrar primer comando*/
+		*cmd_head = (Command*) malloc(sizeof(Command));
+		(*cmd_head)->next = NULL;
+		strcpy( (*cmd_head)->str, str );
+		(*cmd_head)->cb = (*cb);
+		return;
+	}
+
+
+	aux = *cmd_head;
+	while(aux->next != NULL){
+		/*salir cuando estemos en el ultimo*/
+		aux = aux->next;
+	}
+
+	/*registrar comando en la ultima posicion de la lista*/
+
+	aux = (Command*) malloc(sizeof(Command));
+	aux->next = NULL;
+	strcpy(aux->str, str);
+	aux->cb = (*cb);
+
+	return;
+}
+
+/**
+ * cmd_exe busca comando que coincide con cadena str, y ejecuta su función
+ * cmd_head -> cabeza lista de comandos disponibles
+ * str -> cadena caracteres que identifica el comando a ejecutar
+ * sd -> descriptor de socket que quiere ejecutar el comando
+ */
+void cmd_exe(Command* cmd_head, const char *str, int sd){
+
+	while( strcmp(cmd_head->str,str)!=0 || cmd_head!=NULL){
+		cmd_head = cmd_head->next;
+	}
+
+	if(cmd_head != NULL){
+		/*ejecutar funcion indicada en el nodo*/
+		cmd_head->cb(sd);
+	}
+
+}
+
+/**
+ * Limpia memoria de la lista
+ */
+void cmd_clean(Command** cmd_head){
+	Command *aux = *cmd_head;
+
+	if(*cmd_head==NULL){
+		return;
+	}
+
+	while(*cmd_head != NULL){
+		aux = (*cmd_head)->next;
+		free(*cmd_head);
+		*cmd_head = aux;
+	}
+
 }
