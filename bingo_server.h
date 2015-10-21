@@ -12,6 +12,7 @@
 
 static int sacar = 0; /*si esta a uno se saca bola en partidas*/
 static int salir = 0;
+static Partida* partida[10];
 
 /**
  * - Maximo 4 jugadores/partida
@@ -33,7 +34,7 @@ struct command{
 void manejador(int signum);
 void sacar_bolas(int signum);
 
-int buscar_partida(Partida* partida[10], Jugador* jugador);
+int buscar_partida(Jugador** jugador);
 int ingresar_jugador(Jugador* jugador[40]);
 int buscar_jugador(Jugador* j[],int id);
 
@@ -48,5 +49,10 @@ void cmd_clean(Command** cmd_head);
 void cb_who(char *args, Jugador** j, Partida** p);
 void cb_usuario(char *args, Jugador** j, Partida** p);
 void cb_password(char *args, Jugador** j, Partida** p);
+void cb_register(char *args, Jugador** j, Partida** p);
+void cb_iniciar_partida(char *args, Jugador** j, Partida** p);
+void cb_carton(char *args, Jugador**j, Partida **p);
+void cb_partida(char *args, Jugador**j, Partida **p);
+
 
 #endif

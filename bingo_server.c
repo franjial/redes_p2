@@ -19,9 +19,9 @@ int
 main(int argc, char* argv[]){
 	int i,j;
 
-	static Partida* partida[10];
-	static Jugador* jugador[40];
-	static Command* cmd_head = NULL;
+	
+	Jugador* jugador[40];
+	Command* cmd_head = NULL;
 
 	cmd_ini(&cmd_head);
 
@@ -29,6 +29,10 @@ main(int argc, char* argv[]){
 	cmd_reg(&cmd_head, "WHO", &cb_who);
 	cmd_reg(&cmd_head, "USUARIO", &cb_usuario);
 	cmd_reg(&cmd_head, "PASSWORD", &cb_password);
+	cmd_reg(&cmd_head, "REGISTER", &cb_register);
+	cmd_reg(&cmd_head, "INICIAR-PARTIDA", &cb_iniciar_partida);
+	cmd_reg(&cmd_head, "CARTON", &cb_carton);
+	cmd_reg(&cmd_head, "PARTIDA", &cb_partida);
 
 
 	/*variables auxiliares para registrar jugadores*/
@@ -288,17 +292,32 @@ void sacar_bolas(int signum){
 }
 
 /**
- * Buscar partida libre a un jugador. si la encuentra,
- * lo mete y devuelve el slot de la partida. Si no devuelve -1.
+ * Function: cb_buscar_partida
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Jugador logeado
+ *  - Jugador sin partida
+ *
+ *	Une un jugador a una partida
+ *
+ *  Recibe:
+ *  Jugador** jugador    jugador al que se le asigna partida
+ *  
+ *  modifica: (*jugador)->id_partida con nueva partida asignada
+ *  devuelve: slot de partida asignada
+ *            -1 si no se pudo asignar partida
+ *
  */
-int buscar_partida(Partida* partida[10], Jugador* jugador){
+int buscar_partida(Jugador** jugador){
 	int i;
 
 	/*primero buscamos salas con gente QUE NO ESTEN INICIADAS*/
 	for(i=0;i<10;i++){
 		if(partida[i]!=NULL){
 			if( partida[i]->njugadores < 4  && partida[i]->iniciada == 0){
-				partida_ingresar(&partida[i], &jugador);
+				partida_ingresar(&partida[i], jugador);
+				(*jugador)->id_partida = i;
 				return i;
 			}
 		}
@@ -308,7 +327,8 @@ int buscar_partida(Partida* partida[10], Jugador* jugador){
 	for(i=0;i<10;i++){
 		if(partida[i]==NULL){
 			partida_nueva(i, &partida[i]);
-			partida_ingresar(&partida[i], &jugador);
+			partida_ingresar(&partida[i], jugador);
+			(*jugador)->id_partida = i;
 			return i;
 		}
 	}
@@ -402,27 +422,27 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
-	printf("aqui\n");
+	
 
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
 
-
+	printf("%s|%s\n",id,args);
 
 
 	while(cmd_head!=NULL && strcmp(cmd_head->buffer,id)!=0){
 		/* pone cmd_head al nodo que coincide con comando dentro de buffer,
 	   * o al final de la lista. */
-		printf("%s|%s\n",id,cmd_head->buffer);
 		cmd_head = cmd_head->next;
 	}
 
 	if(cmd_head != NULL){
 		/*pongo en buffer los argumentos (puede no tener argumentos)*/
 		if(args!=NULL){
-			strcpy(buffer, args);
+			
+			printf("DEBUG: %s\n",args);
 			/*ejecutar funcion indicada en el nodo*/
-			cmd_head->cb(buffer,j,p);
+			cmd_head->cb(args,j,p);
 		}
 		else{
 			cmd_head->cb(NULL,j,p);
@@ -469,7 +489,7 @@ void cmd_clean(Command** cmd_head){
 void cb_who(char *args, Jugador** j, Partida** p){
 	char resp[250];
 
-	sprintf(resp,"socket:%d user:%s",(*j)->id,(*j)->username);
+	sprintf(resp,"socket:%d user:%s partida:%d",(*j)->id,(*j)->username,(*j)->id_partida);
 	send((*j)->id, resp,strlen(resp),0);
 
 }
@@ -593,11 +613,13 @@ void cb_register(char *args, Jugador** j, Partida** p){
 	int error = 0;
 
 	pch = strtok(args," ");
+	printf("-u[%s]\n",pch);
 	if(strcmp(pch,"-u")==0){
 		pch = strtok(NULL, " ");
 		if(pch!=NULL && strlen(pch)<40){
 			strcpy(username, pch);
 			pch = strtok(NULL, " ");
+			printf("-p[%s]\n",pch);
 			if(strcmp(pch,"-p")==0){
 				pch = strtok(NULL, " \n");
 				if(pch!=NULL && strlen(pch)<128){
@@ -634,4 +656,101 @@ void cb_register(char *args, Jugador** j, Partida** p){
 		strcpy(resp,"+Err. Usuario ya existente.");
 		send((*j)->id,resp,strlen(resp),0);
 	}
+}
+
+
+/**
+ * Function: cb_iniciar_partida
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - No estar ya en una partida
+ *  - Estar logeado
+ *  - Requiere array completo de partidas
+ *
+ *	Se le asigna al jugador una partida
+ *
+ *  char *args    (NULL) No recibe parametros
+ *  Jugador** j   jugador
+ *  Partida** p   (NULL) No se necesita
+ *
+ *  returns: void
+ *
+ */
+void cb_iniciar_partida(char *args, Jugador** j, Partida** p){
+	char resp[250];
+	int asignada;
+
+	if((*j)->logeado==0 || (*j)->id_partida>-1){
+		strcpy(resp,"-ERR. Debes estar logeado y no tener partida.");
+		send((*j)->id,resp,strlen(resp),0);
+	}else{
+		asignada = buscar_partida(j);
+		if(asignada!=-1)
+			sprintf(resp,"+Ok. Ahora estas en partida %d.",asignada);
+		else
+			sprintf(resp,"-Err. Todas las partidas estan llenas.");
+
+		send((*j)->id,resp,strlen(resp),0);
+	}
+}
+
+
+/**
+ * Function: cb_carton
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario identificado
+ *  - Usuario conectado a partida
+ *
+ *	Muestra carton con el que se esta jugando o se va a jugar.
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   (NULL) No se necesita
+ *
+ *  returns: void
+ *
+ */
+void cb_carton(char *args, Jugador**j, Partida **p){
+	char resp[250];
+
+	if((*j)->logeado==0 || (*j)->id_partida==-1){
+		strcpy(resp,"-ERR. Debes estar conectado y en una partida.");
+		send((*j)->id,resp,strlen(resp),0);
+	}else{
+		carton_str(resp,(*j)->carton);
+		send((*j)->id,resp,strlen(resp),0);
+	}
+
+}
+
+/**
+ * Function: cb_partida
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario identificado
+ *  - Usuario conectado a partida
+ *
+ *	Muestra jugadores dentro de partida
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   partida donde esta el jugador
+ *
+ *  returns: void
+ *
+ */
+void cb_partida(char *args, Jugador**j, Partida **p){
+	char resp[250];
+
+	if((*j)->logeado==0 || (*j)->id_partida==-1){
+		strcpy(resp,"-ERR. Debes estar conectado y en una partida.");
+		send((*j)->id,resp,strlen(resp),0);
+	}else{
+		//TODO
+	}
+
 }
