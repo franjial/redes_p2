@@ -19,20 +19,9 @@ int
 main(int argc, char* argv[]){
 	int i,j;
 
-	
-	Command* cmd_head = NULL;
+	Command* cmd_cli = NULL;
 
-	cmd_ini(&cmd_head);
 
-	/*registro comandos que voy a usar*/
-	cmd_reg(&cmd_head, "WHO", &cb_who);
-	cmd_reg(&cmd_head, "USUARIO", &cb_usuario);
-	cmd_reg(&cmd_head, "PASSWORD", &cb_password);
-	cmd_reg(&cmd_head, "REGISTER", &cb_register);
-	cmd_reg(&cmd_head, "INICIAR-PARTIDA", &cb_iniciar_partida);
-	cmd_reg(&cmd_head, "CARTON", &cb_carton);
-	cmd_reg(&cmd_head, "PARTIDA", &cb_partida);
-	cmd_reg(&cmd_head, "SALIR", &cb_salir);
 
 
 	/*variables auxiliares para registrar jugadores*/
@@ -60,6 +49,21 @@ main(int argc, char* argv[]){
 	char micarton[170];
 	char num[2]; /*para imprimir numero carton*/
 
+
+	cmd_ini(&cmd_cli);
+
+	/*registro de comandos que acepto de los clientes*/
+	cmd_reg(&cmd_cli, "WHO", &cb_who);
+	cmd_reg(&cmd_cli, "USUARIO", &cb_usuario);
+	cmd_reg(&cmd_cli, "PASSWORD", &cb_password);
+	cmd_reg(&cmd_cli, "REGISTER", &cb_register);
+	cmd_reg(&cmd_cli, "INICIAR-PARTIDA", &cb_iniciar_partida);
+	cmd_reg(&cmd_cli, "CARTON", &cb_carton);
+	cmd_reg(&cmd_cli, "PARTIDA", &cb_partida);
+	cmd_reg(&cmd_cli, "SALIR", &cb_salir);
+	cmd_reg(&cmd_cli, "BINGO", &cb_bingo);
+	cmd_reg(&cmd_cli, "UNA-LINEA", &cb_linea);
+	cmd_reg(&cmd_cli, "DOS-LINEAS", &cb_slinea);
 
 	/*inicializar punteros a NULL*/
 	for(i=0;i<40;i++){
@@ -202,6 +206,8 @@ main(int argc, char* argv[]){
 						bzero(buffer, sizeof(buffer));
 						fgets(buffer, sizeof(buffer), stdin);
 
+
+						/*cerrar todos los clientes y cerrar servidor*/
 						if(strcmp(buffer,"SALIR\n") == 0 || salir == 1){
 
 							i=0;
@@ -229,19 +235,8 @@ main(int argc, char* argv[]){
 							close(sd);
 							exit(-1);
 						}
-
-						if(strcmp(buffer,"CLIENTS\n") == 0){
-							printf("id\tslot\tusername\n");
-							for(i=0;i<MAX_CLIENTS;i++){
-
-								if(jugador[i]!=NULL){
-									printf("%d\t%d\t%s\n",i,jugador[i]->id,jugador[i]->username);
-								}
-								else{
-									//printf("%d\tX\tX\n",i);
-								}
-
-							}
+						else{
+							printf("-Err. Comando desconocido.\n");
 						}
 					}
 
@@ -258,10 +253,10 @@ main(int argc, char* argv[]){
 							/*ejecuta la funcion que le corresponda*/
 							if(jugador[ret]->id_partida == -1){
 								printf("No tiene partida\n");
-								cmd_exe(cmd_head, buffer, &jugador[ret], NULL);
+								cmd_exe(cmd_cli, buffer, &jugador[ret], NULL);
 							}
 							else
-								cmd_exe(cmd_head, buffer, &jugador[ret], &partida[jugador[ret]->id_partida]);
+								cmd_exe(cmd_cli, buffer, &jugador[ret], &partida[jugador[ret]->id_partida]);
 
 						}
 					}
@@ -373,9 +368,9 @@ int buscar_jugador(Jugador* j[],int id){
 /**
  * cmd_ini inicializa la lista enlazada de comandos
  */
-void cmd_ini(Command** cmd_head){
+void cmd_ini(Command** head){
 
-	(*cmd_head) = NULL;
+	(*head) = NULL;
 }
 
 /**
@@ -779,4 +774,189 @@ void cb_salir(char *args, Jugador**j, Partida **p){
 	partida_sacar_jugador(p,(*j)->id);
 	jugador[(*j)->slot] = NULL;
 	free(*j);
+}
+
+/**
+ * Function: cb_bingo
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario en una partida iniciada
+ *
+ *	Jugador canta bingo, comprobamos que es verdad y
+ *  si es asi, terminamos la partida. Si no tiene bingo,
+ *  se lo comunicamos. Si termina la partida, sacamos
+ *  a todos los jugadores.
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   partida donde esta el jugador
+ *
+ *  returns: void
+ *
+ */
+void cb_bingo(char *args, Jugador**j, Partida **p){
+	char resp[250];
+	int i;
+
+	if((*p)->iniciada == 0){
+		strcpy(resp,"-Err. No procede.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else{
+		if(partida_bingo(*p,*j)){
+			/*hay bingo*/
+			sprintf(resp,"Bingo! Ha ganado %s.",(*j)->username);
+			for(i=0;i<4;i++){
+				send((*p)->jugadores[i]->id,resp,strlen(resp),0);
+			}
+			strcpy(resp,"+Ok. Has ganado.");
+			send((*j)->id,resp,strlen(resp),0);
+			partida_clean(p);
+		}
+		else{
+			/*no hay bingo*/
+			strcpy(resp,"-Err. No procede.");
+			send((*j)->id,resp,strlen(resp),0);
+		}
+	}
+}
+
+
+/**
+ * Function: cb_linea
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario en una partida iniciada
+ *
+ *	Jugador canta linea, comprobamos que es verdad 
+ *  si es asi marcamos linea. Si no tiene linea,
+ *  se lo comunicamos.
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   partida donde esta el jugador
+ *
+ *  returns: void
+ *
+ */
+void cb_linea(char *args, Jugador**j, Partida **p){
+	char resp[250];
+	int i;
+
+	if((*p)->iniciada == 0){
+		strcpy(resp,"-Err. No procede.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else{
+		if(partida_linea(p,*j)){
+			/*hay bingo*/
+			sprintf(resp,"Linea! Ha ganado linea %s.",(*j)->username);
+			for(i=0;i<4;i++){
+				send((*p)->jugadores[i]->id,resp,strlen(resp),0);
+			}
+			strcpy(resp,"+Ok. Has ganado la linea.");
+			send((*j)->id,resp,strlen(resp),0);
+		}
+		else{
+			/*no hay bingo*/
+			strcpy(resp,"-Err. No procede.");
+			send((*j)->id,resp,strlen(resp),0);
+		}
+	}
+}
+
+
+/**
+ * Function: cb_slinea
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario en una partida iniciada
+ *
+ *	Jugador canta segunda linea, comprobamos que es verdad 
+ *  si es asi marcamos segunda linea. Si no tiene linea,
+ *  se lo comunicamos.
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   partida donde esta el jugador
+ *
+ *  returns: void
+ *
+ */
+void cb_slinea(char *args, Jugador**j, Partida **p){
+	char resp[250];
+	int i;
+
+	if((*p)->iniciada == 0){
+		strcpy(resp,"-Err. No procede.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else{
+		if(partida_slinea(p,*j)){
+			/*hay bingo*/
+			sprintf(resp,"Segunda linea! Ha ganado segunda linea %s.",(*j)->username);
+			for(i=0;i<4;i++){
+				send((*p)->jugadores[i]->id,resp,strlen(resp),0);
+			}
+			strcpy(resp,"+Ok. Has ganado la segunda linea.");
+			send((*j)->id,resp,strlen(resp),0);
+		}
+		else{
+			/*no hay bingo*/
+			strcpy(resp,"-Err. No procede.");
+			send((*j)->id,resp,strlen(resp),0);
+		}
+	}
+}
+
+
+
+
+/**
+ * COMANDOS ACEPTADOS POR EL SERVIDOR
+ */
+
+/**
+ * Function: cb_cerrar
+ * --------------------
+ *
+ *	Envia mensaje de cierre a todos los clientes conectados
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   NULL
+ *  Partida** p   NULL
+ *
+ *  returns: void
+ *
+ */
+void cb_cerrar(char *args, Jugador**j, Partida **p){
+
+}
+
+/**
+ * Function: cb_clients
+ * --------------------
+ *
+ *	Imprime numero de clientes conectados
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   NULL
+ *  Partida** p   NULL
+ *
+ *  returns: void
+ *
+ */
+void cb_clients(char *args, Jugador**j, Partida **p){
+	int i;
+	int count = 0;
+
+	for(i=0;i<40;i++){
+		if(jugador[i]!=NULL)
+			count++;
+	}
+
+	printf("+Ok. Hay %d clientes conectados.\n");
 }
