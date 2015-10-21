@@ -28,6 +28,7 @@ main(int argc, char* argv[]){
 	/*registro comandos que voy a usar*/
 	cmd_reg(&cmd_head, "WHO", &cb_who);
 	cmd_reg(&cmd_head, "USUARIO", &cb_usuario);
+	cmd_reg(&cmd_head, "PASSWORD", &cb_password);
 
 
 	/*variables auxiliares para registrar jugadores*/
@@ -498,8 +499,6 @@ void cb_usuario(char *args, Jugador** j, Partida** p){
 	char resp[250];
 	char* username = strtok(args, " \n");
 
-	printf("entra\n");
-
 	if(*j==NULL)
 		return;
 	else if( (*j)->logeado == 1 ){
@@ -519,6 +518,51 @@ void cb_usuario(char *args, Jugador** j, Partida** p){
 		strcpy(resp,"-ERR. Usuario incorrecto.\n");
 		send((*j)->id,resp,strlen(resp),0);
 	}
+}
 
 
+/**
+ * Function: cb_password
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Nombre de usuario del jugador distinto de DESCONOCIDO
+ *  - Jugador no logeado
+ *
+ *	Comprueba que el nombre de usuario del jugador y la PASSWORD especificada
+ *  en el argumento coinciden con la base de datos, si es asi, se marca jugador como
+ *  logeado
+ *
+ *  char *args    argumentos del comando (PASSWORD)
+ *  Jugador** j   jugador a logear y al que responder
+ *  Partida** p   (NULL) Antes de logearse no debe estar en ninguna partida
+ *
+ *  returns: void
+ *
+ */
+void cb_password(char *args, Jugador** j, Partida** p){
+	char resp[250];
+	char* password = strtok(args, " \n");
+
+	if(*j==NULL){
+		//no hacer nada
+	}
+	else if( (*j)->logeado == 1 ){
+		strcpy(resp,"-Err. Ya estas logeado.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else if(strcmp((*j)->username,"DESCONOCIDO")==0){
+		strcpy(resp,"-Err. Debes especificar primero tu nombre de usuario.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else if( jugador_login(j, password) > 0 ){
+
+		strcpy(resp,"+Ok. Login correcto.");
+		send((*j)->id,resp,strlen(resp),0);
+
+	}
+	else{
+		strcpy(resp,"-ERR. Password incorrecta.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
 }

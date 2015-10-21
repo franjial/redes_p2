@@ -47,6 +47,6 @@ void cmd_clean(Command** cmd_head);
 /* comandos disponibles */
 void cb_who(char *args, Jugador** j, Partida** p);
 void cb_usuario(char *args, Jugador** j, Partida** p);
-
+void cb_password(char *args, Jugador** j, Partida** p);
 
 #endif
