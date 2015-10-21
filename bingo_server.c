@@ -241,8 +241,17 @@ main(int argc, char* argv[]){
 
 
 						if(recibidos>0){
+
+
+							ret=buscar_jugador(jugador,i);
+
+							/*ejecuta la funcion que le corresponda*/
+							if(jugador[ret]->id_partida == -1)
+								cmd_exe(cmd_head, buffer, &jugador[ret], NULL);
+							else
+								cmd_exe(cmd_head, buffer, &jugador[ret], &partida[jugador[ret]->id_partida]);
+
 							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
-							cmd_exe(cmd_head, buffer, i); /*ejecuta la funcion que le corresponda*/
 
 							if(pch!=NULL){
 
@@ -698,7 +707,7 @@ void cmd_ini(Command** cmd_head){
 /**
  * cmd_reg introduce un nuevo comando en la lista
  */
-void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, int sd)){
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador** j, Partida** p)){
 	Command *aux;
 
 	if(*cmd_head == NULL){
@@ -733,7 +742,7 @@ void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, int sd))
  * str -> cadena caracteres que identifica el comando a ejecutar
  * sd -> descriptor de socket que quiere ejecutar el comando
  */
-int cmd_exe(Command* cmd_head, char *buffer, int sd){
+int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
@@ -749,7 +758,7 @@ int cmd_exe(Command* cmd_head, char *buffer, int sd){
 
 	if(cmd_head != NULL){
 		/*ejecutar funcion indicada en el nodo*/
-		cmd_head->cb(args,sd);
+		cmd_head->cb(args,j,p);
 		return 1;
 	}
 	else{
@@ -775,10 +784,11 @@ void cmd_clean(Command** cmd_head){
 }
 
 
-void cb_who(char *buffer,int sd){
+void cb_who(char *args, Jugador** j, Partida** p){
 	char resp[250];
 	char* pch;
+
 	pch = strtok(NULL, " \n");
 	sprintf(resp, "Soy la funcion WHO: Recibo %s\n",pch);
-	send(sd,resp,strlen(resp),0);
+	send((*j)->id, resp, strlen(resp), 0);
 }

@@ -20,7 +20,7 @@ static int salir = 0;
  */
 
 typedef
-void (*cmd_func_t)(char *buffer, int sd);
+void (*cmd_func_t)(char *buffer, Jugador** j, Partida** p);
 
 typedef
 struct command{
@@ -39,11 +39,11 @@ int buscar_jugador(Jugador* j[],int id);
 
 
 void cmd_ini(Command** cmd_head);
-void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, int sd));
-int cmd_exe(Command* cmd_head, char *buffer, int sd);
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador** j, Partida** p));
+int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p);
 void cmd_clean(Command** cmd_head);
 
-void cb_who(char* buffer,int sd);
+void cb_who(char *args, Jugador** j, Partida** p);
 
 
 #endif
