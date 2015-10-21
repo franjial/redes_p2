@@ -474,8 +474,6 @@ void cb_who(char *args, Jugador** j, Partida** p){
 
 }
 
-
-
 /**
  * Function: cb_usuario
  * --------------------
@@ -563,6 +561,77 @@ void cb_password(char *args, Jugador** j, Partida** p){
 	}
 	else{
 		strcpy(resp,"-ERR. Password incorrecta.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+}
+
+/**
+ * Function: cb_register
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario conectado al servidor
+ *  - Recibir args con formato -u  <username> -p <password>
+ *  - <username> no debe existir en la base de datos
+ *  - longitud de username menor de 40 caracteres
+ *  - longitud de password menor de 128 caracteres
+ *
+ *	Registra en la base de datos un usuario nuevo.
+ *
+ *  char *args    argumentos del comando (-u  <username> -p <password>)
+ *  Jugador** j   cliente que efectua el registro
+ *  Partida** p   (NULL) No se necesita
+ *
+ *  returns: void
+ *
+ */
+void cb_register(char *args, Jugador** j, Partida** p){
+	char resp[250];
+	char username[40];
+	char password[128];
+	char *pch;
+	int error = 0;
+
+	pch = strtok(args," ");
+	if(strcmp(pch,"-u")==0){
+		pch = strtok(NULL, " ");
+		if(pch!=NULL && strlen(pch)<40){
+			strcpy(username, pch);
+			pch = strtok(NULL, " ");
+			if(strcmp(pch,"-p")==0){
+				pch = strtok(NULL, " \n");
+				if(pch!=NULL && strlen(pch)<128){
+					strcpy(pch,password);
+				}
+				else{
+					/*error de formato*/
+					error=1;
+				}
+			}
+			else{
+				error=1;
+			}
+		}
+		else{
+			error=1;
+		}
+
+	}
+	else{
+		error=1;
+	}
+
+	if(error==1){
+		strcpy(resp,"-ERR. Error de formato: REGISTER -u <username> -p <password>");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else if(jugador_registrar(username, password)>0){
+		strcpy(resp,"+Ok. Usuario registrado con exito.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else{
+		/*usuario ya registrado.*/
+		strcpy(resp,"+Err. Usuario ya existente.");
 		send((*j)->id,resp,strlen(resp),0);
 	}
 }
