@@ -19,8 +19,12 @@ int
 main(int argc, char* argv[]){
 	int i,j;
 
-	Partida* partida[10];
-	Jugador* jugador[40];
+	static Partida* partida[10];
+	static Jugador* jugador[40];
+	static Command* cmd_head = NULL;
+
+	cmd_ini(&cmd_head);
+	cmd_reg(&cmd_head, "WHO", &cb_who);
 
 	/*variables auxiliares para registrar jugadores*/
 	char reg_username[40];
@@ -238,6 +242,7 @@ main(int argc, char* argv[]){
 
 						if(recibidos>0){
 							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
+							cmd_exe(cmd_head, buffer, i); /*ejecuta la funcion que le corresponda*/
 
 							if(pch!=NULL){
 
@@ -648,7 +653,6 @@ int buscar_partida(Partida* partida[10], Jugador* jugador){
 
 	/*si llegamos aqui esta todo completo*/
 	return -1;
-
 }
 
 /**
@@ -687,28 +691,28 @@ int buscar_jugador(Jugador* j[],int id){
  * cmd_ini inicializa la lista enlazada de comandos
  */
 void cmd_ini(Command** cmd_head){
+
 	(*cmd_head) = NULL;
 }
 
 /**
  * cmd_reg introduce un nuevo comando en la lista
  */
-void cmd_reg(Command** cmd_head, const char *str, void (*cb)(int sd)){
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, int sd)){
 	Command *aux;
-
 
 	if(*cmd_head == NULL){
 		/*registrar primer comando*/
 		*cmd_head = (Command*) malloc(sizeof(Command));
 		(*cmd_head)->next = NULL;
-		strcpy( (*cmd_head)->str, str );
+		strcpy( (*cmd_head)->buffer, buffer );
 		(*cmd_head)->cb = (*cb);
 		return;
 	}
 
 
 	aux = *cmd_head;
-	while(aux->next != NULL){
+	while(aux != NULL){
 		/*salir cuando estemos en el ultimo*/
 		aux = aux->next;
 	}
@@ -717,7 +721,7 @@ void cmd_reg(Command** cmd_head, const char *str, void (*cb)(int sd)){
 
 	aux = (Command*) malloc(sizeof(Command));
 	aux->next = NULL;
-	strcpy(aux->str, str);
+	strcpy(aux->buffer, buffer);
 	aux->cb = (*cb);
 
 	return;
@@ -729,17 +733,28 @@ void cmd_reg(Command** cmd_head, const char *str, void (*cb)(int sd)){
  * str -> cadena caracteres que identifica el comando a ejecutar
  * sd -> descriptor de socket que quiere ejecutar el comando
  */
-void cmd_exe(Command* cmd_head, const char *str, int sd){
+int cmd_exe(Command* cmd_head, char *buffer, int sd){
+	char *id; /*cadena que identifica el comando a ejecutar*/
+	char *args; /*resto del buffer*/
 
-	while( strcmp(cmd_head->str,str)!=0 || cmd_head!=NULL){
+	id = strtok(buffer," \n"); /*extraer comando*/
+	args = strtok(NULL, "\n");
+
+
+	while( strcmp(cmd_head->buffer,id)!=0 && cmd_head!=NULL){
+		/* pone cmd_head al nodo que coincide con comando dentro de buffer,
+	   * o al final de la lista. */
 		cmd_head = cmd_head->next;
 	}
 
 	if(cmd_head != NULL){
 		/*ejecutar funcion indicada en el nodo*/
-		cmd_head->cb(sd);
+		cmd_head->cb(args,sd);
+		return 1;
 	}
-
+	else{
+		return 0;
+	}
 }
 
 /**
@@ -757,5 +772,13 @@ void cmd_clean(Command** cmd_head){
 		free(*cmd_head);
 		*cmd_head = aux;
 	}
+}
 
+
+void cb_who(char *buffer,int sd){
+	char resp[250];
+	char* pch;
+	pch = strtok(NULL, " \n");
+	sprintf(resp, "Soy la funcion WHO: Recibo %s\n",pch);
+	send(sd,resp,strlen(resp),0);
 }

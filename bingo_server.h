@@ -20,12 +20,12 @@ static int salir = 0;
  */
 
 typedef
-void (*cmd_func_t)(int sd);
+void (*cmd_func_t)(char *buffer, int sd);
 
 typedef
 struct command{
 	cmd_func_t cb; /*callback*/
-	char str[128];
+	char buffer[250];
 	struct command *next;
 }Command;
 
@@ -39,9 +39,11 @@ int buscar_jugador(Jugador* j[],int id);
 
 
 void cmd_ini(Command** cmd_head);
-void cmd_reg(Command** cmd_head, const char *str, void (*cb)(int sd));
-void cmd_exe(Command* cmd_head, const char *str, int sd);
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, int sd));
+int cmd_exe(Command* cmd_head, char *buffer, int sd);
 void cmd_clean(Command** cmd_head);
+
+void cb_who(char* buffer,int sd);
 
 
 #endif
