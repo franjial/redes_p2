@@ -20,7 +20,6 @@ main(int argc, char* argv[]){
 	int i,j;
 
 	
-	Jugador* jugador[40];
 	Command* cmd_head = NULL;
 
 	cmd_ini(&cmd_head);
@@ -33,6 +32,7 @@ main(int argc, char* argv[]){
 	cmd_reg(&cmd_head, "INICIAR-PARTIDA", &cb_iniciar_partida);
 	cmd_reg(&cmd_head, "CARTON", &cb_carton);
 	cmd_reg(&cmd_head, "PARTIDA", &cb_partida);
+	cmd_reg(&cmd_head, "SALIR", &cb_salir);
 
 
 	/*variables auxiliares para registrar jugadores*/
@@ -185,8 +185,9 @@ main(int argc, char* argv[]){
 
 							}else{
 
-								/*le asigno al nuevo jugador su numero de socket*/
+								/*le asigno al nuevo jugador su numero de socket y slot*/
 								jugador[ret]->id = new_sd;
+								jugador[ret]->slot = ret;
 
 								FD_SET(new_sd, &readfds);
 								strcpy(buffer,"+Ok. Usuario conectado");
@@ -489,7 +490,7 @@ void cmd_clean(Command** cmd_head){
 void cb_who(char *args, Jugador** j, Partida** p){
 	char resp[250];
 
-	sprintf(resp,"socket:%d user:%s partida:%d",(*j)->id,(*j)->username,(*j)->id_partida);
+	sprintf(resp,"slot: %d socket:%d user:%s partida:%d",(*j)->slot,(*j)->id,(*j)->username,(*j)->id_partida);
 	send((*j)->id, resp,strlen(resp),0);
 
 }
@@ -748,9 +749,34 @@ void cb_partida(char *args, Jugador**j, Partida **p){
 
 	if((*j)->logeado==0 || (*j)->id_partida==-1){
 		strcpy(resp,"-ERR. Debes estar conectado y en una partida.");
-		send((*j)->id,resp,strlen(resp),0);
 	}else{
-		//TODO
+		partida_jugadores_str(*p, resp);
 	}
 
+	send((*j)->id,resp,strlen(resp),0);
+
+}
+
+
+/**
+ * Function: cb_salir
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Usuario conectado
+ *
+ *	Saca jugador de partida si esta en una, e informa a jugadores de su partida
+ *  Saca jugador de su slot.
+ *
+ *  char *args    argumentos del comando (NULL)
+ *  Jugador** j   jugador
+ *  Partida** p   partida donde esta el jugador
+ *
+ *  returns: void
+ *
+ */
+void cb_salir(char *args, Jugador**j, Partida **p){
+	partida_sacar_jugador(p,(*j)->id);
+	jugador[(*j)->slot] = NULL;
+	free(*j);
 }

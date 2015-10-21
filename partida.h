@@ -30,4 +30,5 @@ int partida_clean(Partida** partida);
 
 int partida_sacar_jugador(Partida** partida, int id_jugador); /*sacar jugador de la partida*/
 
+void partida_jugadores_str(Partida *partida, char buffer[250]);
 #endif

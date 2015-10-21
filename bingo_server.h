@@ -13,6 +13,7 @@
 static int sacar = 0; /*si esta a uno se saca bola en partidas*/
 static int salir = 0;
 static Partida* partida[10];
+static Jugador* jugador[40];
 
 /**
  * - Maximo 4 jugadores/partida
@@ -53,6 +54,7 @@ void cb_register(char *args, Jugador** j, Partida** p);
 void cb_iniciar_partida(char *args, Jugador** j, Partida** p);
 void cb_carton(char *args, Jugador**j, Partida **p);
 void cb_partida(char *args, Jugador**j, Partida **p);
+void cb_salir(char *args, Jugador**j, Partida **p);
 
 
 #endif

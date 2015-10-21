@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "cartones.h"
 #include "partida.h"
 #include "bolas.h"
@@ -149,7 +151,7 @@ int partida_clean(Partida** partida){
 int partida_sacar_jugador(Partida** partida, int id_jugador){
 	int i;
 
-	if(*partida == NULL){
+	if(partida == NULL){
 		return 0;
 	}
 
@@ -165,4 +167,28 @@ int partida_sacar_jugador(Partida** partida, int id_jugador){
 	}
 
 	return 0;
+}
+
+/**
+ * Escribe en buffer, un listado con los jugadores dentro de la partida
+ */
+void partida_jugadores_str(Partida *partida, char buffer[250]){
+	int i;
+	char aux[55];
+
+	bzero(buffer,sizeof(buffer));
+
+	for(i=0;i<4;i++){
+		if(partida->jugadores[i]!=NULL){
+			bzero(aux,sizeof(aux));
+			sprintf(aux,"[%d:%s] ",i,partida->jugadores[i]->username);
+			strcat(buffer,aux);
+		}
+		else{
+			bzero(aux,sizeof(aux));
+			sprintf(aux,"[%d:VACIO] ",i);
+			strcat(buffer,aux);
+		}
+	}
+
 }
