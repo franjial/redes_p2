@@ -43,7 +43,10 @@ void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador*
 int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p);
 void cmd_clean(Command** cmd_head);
 
+
+/* comandos disponibles */
 void cb_who(char *args, Jugador** j, Partida** p);
+void cb_usuario(char *args, Jugador** j, Partida** p);
 
 
 #endif

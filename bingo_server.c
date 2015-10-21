@@ -24,7 +24,11 @@ main(int argc, char* argv[]){
 	static Command* cmd_head = NULL;
 
 	cmd_ini(&cmd_head);
+
+	/*registro comandos que voy a usar*/
 	cmd_reg(&cmd_head, "WHO", &cb_who);
+	cmd_reg(&cmd_head, "USUARIO", &cb_usuario);
+
 
 	/*variables auxiliares para registrar jugadores*/
 	char reg_username[40];
@@ -246,365 +250,13 @@ main(int argc, char* argv[]){
 							ret=buscar_jugador(jugador,i);
 
 							/*ejecuta la funcion que le corresponda*/
-							if(jugador[ret]->id_partida == -1)
+							if(jugador[ret]->id_partida == -1){
+								printf("No tiene partida\n");
 								cmd_exe(cmd_head, buffer, &jugador[ret], NULL);
+							}
 							else
 								cmd_exe(cmd_head, buffer, &jugador[ret], &partida[jugador[ret]->id_partida]);
 
-							pch = strtok(buffer," \n"); /*primera llamada a strtok contiene comando*/
-
-							if(pch!=NULL){
-
-								if(strcmp(pch,"USUARIO")==0){
-									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
-									if(pch==NULL || strlen(pch)==0){
-										strcpy(buffer,"-ERR. Comando incorrecto.\n");
-										send(i,buffer,strlen(buffer),0);
-									}
-									else{
-										ret=buscar_jugador(jugador,i);
-
-										if(ret!=-1 && jugador[ret]!=NULL){
-
-											/*comprobar que el username esta registradon el el fichero*/
-											if(jugador_registrado(pch)){
-
-												/*copio cadena despues del primer espacio en username->jugador*/
-												strcpy(jugador[ret]->username, pch);
-												/*sprintf(identificador,"slot:%d socket:%d #%s#",ret,jugador[ret]->id,jugador[ret]->username);*/
-												strcpy(buffer,"+Ok. Usuario correcto.");
-												send(i,buffer,strlen(buffer),0);
-
-											}
-											else{
-												strcpy(buffer,"-ERR. Usuario incorrecto.\n");
-												send(i,buffer,strlen(buffer),0);
-											}
-
-										}
-
-									}
-								}
-
-								/*si recibo password y es correcta, hago login del usuario*/
-								else if(strcmp(pch,"PASSWORD")==0){
-									ret=buscar_jugador(jugador,i);
-									pch = strtok(NULL," \n"); /*segunda llamada a strtock pch contiene primer argumento*/
-									if(pch==NULL || strlen(pch)==0){
-										strcpy(buffer,"-ERR. Contraseña incorrecta.");
-										send(i,buffer,strlen(buffer),0);
-									}
-									else if(ret!=-1 && jugador[ret]!=NULL){
-										/*intento login, informar del resultado*/
-										if(jugador_login(&jugador[ret],pch) > 0){
-											sprintf(buffer,"+Ok. Se ha logeado como %s",jugador[ret]->username);
-											send(i,buffer,strlen(buffer),0);
-										}
-										else{
-											strcpy(buffer,"-ERR. Contraseña incorrecta.");
-											send(i,buffer,strlen(buffer),0);
-										}
-									}
-									else{
-										strcpy(buffer,"-ERR. No estas conectado");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
-
-								/*registrar usuario*/
-								else if(strcmp(pch,"REGISTER")==0){
-									if(strcmp(strtok(NULL," "),"-u")==0){
-										strcpy(reg_username, strtok(NULL, " "));
-										if(strcmp(strtok(NULL, " "),"-p")==0){
-											strcpy(reg_pass, strtok(NULL," \n"));
-											if(jugador_registrar(reg_username, reg_pass)>0){
-												strcpy(buffer,"+Ok. Usuario registrado correctamente");
-												send(i,buffer,strlen(buffer),0);
-											}
-											else{
-												strcpy(buffer,"-Err. No se pudo registrar el usuario");
-												send(i,buffer,strlen(buffer),0);
-											}
-										}
-										else{
-											/*error*/
-											strcpy(buffer,"-Err. Comando desconocido");
-											send(i,buffer,strlen(buffer),0);
-										}
-									}
-									else{
-										/*error*/
-										strcpy(buffer,"-Err. Comando desconocido");
-										send(i,buffer,strlen(buffer),0);
-									}
-
-									bzero(reg_username,sizeof(reg_username));
-									bzero(reg_pass,sizeof(reg_pass));
-								}
-
-								/*enviar su carton a jugador*/
-								else if(strcmp(pch,"CARTON")==0){
-
-									ret=buscar_jugador(jugador,i);
-
-									if(ret==-1){
-										strcpy(buffer,"-Err. no tienes carton\n");
-										send(i,buffer,strlen(buffer),0);
-									}
-
-									else if(jugador[ret]==NULL){
-										strcpy(buffer,"-Err. no tienes carton\n");
-										send(i,buffer,strlen(buffer),0);
-									}
-
-									else if(jugador[ret]->id_partida == -1){
-											/*no esta en partida*/
-											strcpy(buffer,"-Err. no estas jugando\n");
-											send(i,buffer,strlen(buffer),0);
-									}
-									else{
-										/*esta en una partida*/
-										carton_str(micarton,jugador[ret]->carton);
-										send(i,micarton,strlen(micarton),0);
-									}
-								}
-
-								/**
-								 * Un cliente quiere salir
-								 * Sale de partida si esta en una
-								 * Se saca de su slot
-								 */
-								else if(strcmp(pch,"SALIR")==0){
-									ret = buscar_jugador(jugador,i);
-									if(ret!=-1){
-										if(jugador[ret]!=NULL){
-											partida_sacar_jugador(&(partida[jugador[ret]->id_partida]),jugador[ret]->id);
-											free(jugador[ret]);
-											jugador[ret]=NULL;
-										}
-									}
-								}
-
-								else if(strcmp(pch,"INICIAR-PARTIDA")==0){
-
-									bzero(buffer,sizeof(buffer));
-
-									ret=buscar_jugador(jugador,i);
-									if(ret!=-1){
-										if(jugador[ret]!=NULL){
-
-											jugador[ret]->id_partida = buscar_partida(partida,jugador[ret]);
-											if(jugador[ret]->id_partida == -1){
-												/*no se pudo asignar partida: mandar mensaje de error.*/
-
-												strcpy(buffer,"-ERR. No hay partidas disponibles.");
-												send(i,buffer,strlen(buffer),0);
-											}
-											else{
-												jugador[ret]->listo = 1;
-												/*Si estan los cuatro jugadores listos, marcar para iniciar*/
-												if(partida[jugador[ret]->id_partida]->njugadores == 4){
-													todos_listos=1;
-													for(j=0;j<4;j++){
-														if(partida[jugador[ret]->id_partida]->jugadores[j]->listo == 0){
-															todos_listos=0;
-															break;
-														}
-													}
-													if(todos_listos==0){
-														/*no estan todos listos, informar*/
-														sprintf(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
-														send(i,buffer,strlen(buffer),0);
-													}
-													else{
-														/*estan todos listos, informar y marcar para iniciar*/
-
-														partida[jugador[ret]->id_partida]->iniciada = 1;
-
-														strcpy(buffer,"+Ok. Empieza la partida");
-														for(j=0;j<4;j++){ /*a todos los miembros de la partida*/
-															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,
-																	 buffer,strlen(buffer),0);
-														}
-													}
-												}
-												else{
-													/*no estan todos*/
-													strcpy(buffer,"+Ok. Peticion Recibida. Quedamos a la espera de mas jugadores");
-													send(i,buffer,strlen(buffer),0);
-
-												}
-											}
-
-										}
-									}
-									else{
-										/*error no esta conectado*/
-										strcpy(buffer,"-Err. No estas conectado.");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
-
-								else if(strcmp(buffer,"ID")==0){
-									bzero(identificador,sizeof(identificador));
-									sprintf(identificador,"%d",i);
-									send(i,identificador,strlen(identificador),0);
-								}
-
-								else if(strcmp(buffer,"WHO")==0){
-									ret = buscar_jugador(jugador,i);
-									sprintf(identificador,"slot:%d socket:%d user:%s",ret,i,jugador[ret]->username);
-									if(ret!=-1 && jugador[ret]!=NULL){
-												//send(i,jugador[ret]->username,strlen(jugador[ret]->username),0);
-										send(i,identificador,strlen(identificador),0);
-
-									}
-									else{
-										send(i,"DESCONOCIDO",11,0);
-									}
-								}
-
-								else if(strcmp(buffer,"PISTA")==0){
-									ret = buscar_jugador(jugador, i);
-									if(ret != -1 && jugador[ret]!=NULL){
-										if(partida_linea(partida[jugador[ret]->id_partida], jugador[ret])){
-											strcpy(buffer,"TIENES LINEA!");
-											send(i,buffer,strlen(buffer),0);
-										}
-
-										else if(partida_slinea(partida[jugador[ret]->id_partida], jugador[ret])){
-											strcpy(buffer,"TIENES SEGUNDA LINEA!");
-											send(i,buffer,strlen(buffer),0);
-										}
-
-										else if(partida_bingo(partida[jugador[ret]->id_partida], jugador[ret])){
-											strcpy(buffer,"TIENES BINGO!");
-											send(i,buffer,strlen(buffer),0);
-										}
-
-										else{
-											strcpy(buffer,"NO TIENES NADA :(");
-											send(i,buffer,strlen(buffer),0);
-										}
-
-									}
-
-								}
-
-								else if(strcmp(buffer,"BINGO")==0){
-									ret = buscar_jugador(jugador,i);
-									if(ret!=-1){
-										if(jugador[ret]!=NULL){
-											if(jugador[ret]->id_partida != -1){
-												// comprobar si es bingo y responder (si bingo cerrar partida)
-												if(partida_bingo(partida[jugador[ret]->id_partida], jugador[ret])){
-													sprintf(buffer,"+Ok. Bingo de %s",jugador[ret]->username);
-													for(j=0;j<4;j++){
-														if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL) /*responder a los que esten en partida*/
-															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,buffer,strlen(buffer),0);
-													}
-													partida_clean(&partida[jugador[ret]->id_partida]);
-												}
-												else{
-													strcpy(buffer,"-Err. No procede");
-													send(i,buffer,strlen(buffer),0);
-												}
-											}
-											else{
-												strcpy(buffer,"-Err. No hay partida.");
-												send(i,buffer,strlen(buffer),0);
-											}
-										}
-										else{
-											strcpy(buffer,"-Err. No procede.");
-											send(i,buffer,strlen(buffer),0);
-										}
-									}
-									else{
-										strcpy(buffer,"-Err. No procede.");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
-
-								else if(strcmp(buffer,"LINEA")==0){
-									ret = buscar_jugador(jugador,i);
-									if(ret!=-1){
-										if(jugador[ret]!=NULL){
-											if(jugador[ret]->id_partida != -1){
-												// comprobar si es linea y responder
-												if(partida_linea(partida[jugador[ret]->id_partida], jugador[ret])){
-													sprintf(buffer,"+Ok. Linea de %s",jugador[ret]->username);
-													partida[jugador[ret]->id_partida]->ganador_linea = jugador[ret];
-													for(j=0;j<4;j++){
-														if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL) /*responder a los que esten en partida*/
-															send(partida[jugador[ret]->id_partida]->jugadores[j]->id,buffer,strlen(buffer),0);
-													}
-
-												}
-												else{
-													strcpy(buffer,"-Err. No procede");
-													send(i,buffer,strlen(buffer),0);
-												}
-											}
-											else{
-												strcpy(buffer,"-Err. No hay partida.");
-												send(i,buffer,strlen(buffer),0);
-											}
-										}
-										else{
-											strcpy(buffer,"-Err. No procede.");
-											send(i,buffer,strlen(buffer),0);
-										}
-									}
-									else{
-										strcpy(buffer,"-Err. No procede.");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
-
-								else if(strcmp(buffer,"PARTIDA")==0){
-									bzero(buffer,sizeof(buffer));
-
-									ret=buscar_jugador(jugador,i);
-									if(ret!=-1){
-										if(jugador[ret]->id_partida != -1){
-
-											for(j=0;j<4;j++){
-												if(partida[jugador[ret]->id_partida]->jugadores[j]!=NULL){
-													sprintf(buffer, "\n%d\t%s\t%d",j, partida[jugador[ret]->id_partida]->jugadores[j]->username,
-																											 partida[jugador[ret]->id_partida]->jugadores[j]->listo);
-
-													send(i,buffer,strlen(buffer),0);
-												}
-												else{
-													sprintf(buffer, "\n%d\tVACIO",j);
-													send(i,buffer,strlen(buffer),0);
-												}
-											}
-
-
-
-										}else{
-											strcpy(buffer,"-ERR. No estas en ninguna partida");
-											send(i,buffer,strlen(buffer),0);
-										}
-									}else{
-										strcpy(buffer,"-ERR. No estas conectado");
-										send(i,buffer,strlen(buffer),0);
-									}
-								}
-
-								/*COMANDO INCORRECTO*/
-								else{
-									strcpy(buffer,"-ERR. Comando desconocido");
-									send(i,buffer,strlen(buffer),0);
-
-								}
-							}
-							else{
-								strcpy(buffer,"-ERR. Comando incorrecto.\n");
-								send(i,buffer,strlen(buffer),0);
-							}
 						}
 					}
 			}
@@ -708,32 +360,35 @@ void cmd_ini(Command** cmd_head){
  * cmd_reg introduce un nuevo comando en la lista
  */
 void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador** j, Partida** p)){
-	Command *aux;
+	Command *cursor;
 
 	if(*cmd_head == NULL){
+
 		/*registrar primer comando*/
 		*cmd_head = (Command*) malloc(sizeof(Command));
 		(*cmd_head)->next = NULL;
 		strcpy( (*cmd_head)->buffer, buffer );
 		(*cmd_head)->cb = (*cb);
-		return;
+
 	}
 
+	else{
+		cursor = *cmd_head;
 
-	aux = *cmd_head;
-	while(aux != NULL){
-		/*salir cuando estemos en el ultimo*/
-		aux = aux->next;
+		while(cursor->next != NULL){
+			/*salir cuando estemos en el ultimo*/
+			cursor = cursor->next;
+		}
+
+		/*registrar comando en la ultima posicion de la lista*/
+
+		cursor->next = (Command*) malloc(sizeof(Command));
+
+		cursor->next->next = NULL;
+		strcpy(cursor->next->buffer, buffer);
+		cursor->next->cb = (*cb);
 	}
 
-	/*registrar comando en la ultima posicion de la lista*/
-
-	aux = (Command*) malloc(sizeof(Command));
-	aux->next = NULL;
-	strcpy(aux->buffer, buffer);
-	aux->cb = (*cb);
-
-	return;
 }
 
 /**
@@ -746,19 +401,32 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
+	printf("aqui\n");
+
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
 
 
-	while( strcmp(cmd_head->buffer,id)!=0 && cmd_head!=NULL){
+
+
+	while(cmd_head!=NULL && strcmp(cmd_head->buffer,id)!=0){
 		/* pone cmd_head al nodo que coincide con comando dentro de buffer,
 	   * o al final de la lista. */
+		printf("%s|%s\n",id,cmd_head->buffer);
 		cmd_head = cmd_head->next;
 	}
 
 	if(cmd_head != NULL){
-		/*ejecutar funcion indicada en el nodo*/
-		cmd_head->cb(args,j,p);
+		/*pongo en buffer los argumentos (puede no tener argumentos)*/
+		if(args!=NULL){
+			strcpy(buffer, args);
+			/*ejecutar funcion indicada en el nodo*/
+			cmd_head->cb(buffer,j,p);
+		}
+		else{
+			cmd_head->cb(NULL,j,p);
+		}
+
 		return 1;
 	}
 	else{
@@ -783,12 +451,74 @@ void cmd_clean(Command** cmd_head){
 	}
 }
 
-
+/**
+ * Function: cb_who
+ * --------------------
+ *
+ *	Responde al jugador que lo solicita su nombre de usuario y el numero
+ *  de socket.
+ *
+ *  char *args    NULL
+ *  Jugador** j   jugador al que responder
+ *  Partida** p   partida en la que esta el jugador (NULL si no esta en ninguna)
+ *
+ *  returns: void
+ *
+ */
 void cb_who(char *args, Jugador** j, Partida** p){
 	char resp[250];
-	char* pch;
 
-	pch = strtok(NULL, " \n");
-	sprintf(resp, "Soy la funcion WHO: Recibo %s\n",pch);
-	send((*j)->id, resp, strlen(resp), 0);
+	sprintf(resp,"socket:%d user:%s",(*j)->id,(*j)->username);
+	send((*j)->id, resp,strlen(resp),0);
+
+}
+
+
+
+/**
+ * Function: cb_usuario
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Jugador conectado
+ *  - Jugador no logeado
+ *
+ *	Comprueba que el nombre de usuario recibido en args esta en la base de datos
+ *  si esta, se lo asigna al jugador a la espera de una PASSWORD que sera el
+ *  siguiente comando que el jugador debe introducir para logearse.
+ *
+ *  char *args    argumentos del comando (NOMBRE DE USUARIO)
+ *  Jugador** j   jugador al que responder
+ *  Partida** p   (NULL) Antes de logearse no debe estar en ninguna partida
+ *
+ *  returns: void
+ *
+ */
+void cb_usuario(char *args, Jugador** j, Partida** p){
+	char resp[250];
+	char* username = strtok(args, " \n");
+
+	printf("entra\n");
+
+	if(*j==NULL)
+		return;
+	else if( (*j)->logeado == 1 ){
+		strcpy(resp,"-Err. Ya estas logeado.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else if(jugador_registrado(username)){
+
+		/* primer argumento recibido (username) a (*j)->username */
+		strcpy( (*j)->username, username );
+
+		strcpy(resp,"+Ok. Usuario correcto.");
+		send((*j)->id,resp,strlen(resp),0);
+
+	}
+	else{
+		strcpy(resp,"-ERR. Usuario incorrecto.\n");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+
+
 }
