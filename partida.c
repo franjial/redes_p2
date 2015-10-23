@@ -128,20 +128,22 @@ int partida_ingresar(Partida** partida, Jugador** jugador){
  * a los jugadores. Le asigna un nuevo carton aleatorio
  * a cada uno.
  */
-int partida_clean(Partida** partida){
+int partida_clean(Partida** p){
 	int i,j;
 
-	bombo_clean( &(*partida)->bombo ); //limpiar bombo
-	bombo_clean( &(*partida)->fuera ); //limpiar bombo bolas sacadas
+	bombo_clean( &(*p)->bombo ); //limpiar bombo
+	bombo_clean( &(*p)->fuera ); //limpiar bombo bolas sacadas
 
 	for(i=0;i<4;i++){
-		(*partida)->jugadores[i]->listo = 0;
-		(*partida)->jugadores[i]->id_partida = -1;
-		carton_nuevo((*partida)->jugadores[i]->carton);
-		(*partida)->jugadores[i] = NULL;
+		if((*p)->jugadores[i]!=NULL){
+			(*p)->jugadores[i]->id_partida = -1;
+			carton_nuevo((*p)->jugadores[i]->carton);
+			(*p)->jugadores[i] = NULL;
+		}
 	}
 
-	free(*partida);
+	// TODO : con free(*p); no se borra ¿porque?
+	free(partida[(*p)->id]);
 
 }
 

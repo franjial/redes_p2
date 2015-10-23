@@ -46,8 +46,7 @@ main(int argc, char* argv[]){
 	int keep_going=1;
 	int bola;
 
-	char micarton[170];
-	char num[2]; /*para imprimir numero carton*/
+
 
 
 	cmd_ini(&cmd_cli);
@@ -123,25 +122,25 @@ main(int argc, char* argv[]){
 	while(1){
 
 		/*interrupcion periodica para sacar bolas*/
-		alarm(6);
+		alarm(1);
 		if(sacar==1){
 			signal(SIGALRM, SIG_IGN);
 
 			/*sacar bolas*/
 			for(i=0;i<10;i++){
+				/*reviso todas las partidas*/
+
 				if(partida[i]!=NULL){
-
 					if(partida[i]->bombo == NULL){
-						/**
-						 * enviar mensaje de partida terminada
-						 * sacar jugadores de la partida
-						 * liberar memoria
-						 */
+						/*bombo vacio, terminar partida, sacar jugadores.*/
+						partida_clean(&partida[i]);
+						partida[i]=NULL;
 
-						 partida_clean(&partida[i]);
 					}
 
-					if(partida[i]->iniciada == 1){
+					else if(partida[i]->iniciada == 1){
+						/*partida iniciada, sacar bola del bombo*/
+
 						bola = partida_sacar(&partida[i]);
 						if(bola>0){
 							for(j=0;j<4;j++){
@@ -150,6 +149,17 @@ main(int argc, char* argv[]){
 									sprintf(buffer,"\nEl %d!\n",bola);
 									send(partida[i]->jugadores[j]->id,buffer,strlen(buffer),0);
 								}
+							}
+						}
+					}
+
+					else{
+						/*partida no iniciada, comprobar si esta llena y marcar para inicio*/
+						if(partida[i]->njugadores == 4){
+							partida[i]->iniciada=1;
+							for(j=0;j<4;j++){
+								strcpy(buffer,"+Ok. Comenzando partida!");
+								send(partida[i]->jugadores[j]->id,buffer, strlen(buffer), 0);
 							}
 						}
 					}
@@ -339,8 +349,6 @@ int buscar_partida(Jugador** jugador){
 int ingresar_jugador(Jugador* jugador[40]){
 	int i;
 
-	/*TODO pedir usuario y pass*/
-
 	for(i=0;i<40;i++){
 		if(jugador[i] == NULL ){
 			jugador_nuevo(&jugador[i]);
@@ -497,6 +505,7 @@ void cb_who(char *args, Jugador** j, Partida** p){
  *  Condiciones previas:
  *  - Jugador conectado
  *  - Jugador no logeado
+ *  - Recibir un argumento (username)
  *
  *	Comprueba que el nombre de usuario recibido en args esta en la base de datos
  *  si esta, se lo asigna al jugador a la espera de una PASSWORD que sera el
@@ -515,6 +524,10 @@ void cb_usuario(char *args, Jugador** j, Partida** p){
 
 	if(*j==NULL)
 		return;
+	else if(username==NULL){
+		strcpy(resp,"-ERR. Nombre de usuario incorrecto");
+		send((*j)->id,resp,strlen(resp),0);
+	}
 	else if( (*j)->logeado == 1 ){
 		strcpy(resp,"-Err. Ya estas logeado.");
 		send((*j)->id,resp,strlen(resp),0);
@@ -542,6 +555,7 @@ void cb_usuario(char *args, Jugador** j, Partida** p){
  *  Condiciones previas:
  *  - Nombre de usuario del jugador distinto de DESCONOCIDO
  *  - Jugador no logeado
+ *  - Recibir un argumento
  *
  *	Comprueba que el nombre de usuario del jugador y la PASSWORD especificada
  *  en el argumento coinciden con la base de datos, si es asi, se marca jugador como
@@ -560,6 +574,10 @@ void cb_password(char *args, Jugador** j, Partida** p){
 
 	if(*j==NULL){
 		//no hacer nada
+	}
+	else if(password==NULL){
+		strcpy(resp,"-ERR. Password incorrecta.");
+		send((*j)->id,resp,strlen(resp),0);
 	}
 	else if( (*j)->logeado == 1 ){
 		strcpy(resp,"-Err. Ya estas logeado.");

@@ -163,7 +163,10 @@ void carton_str(char buffer[250], int carton[3][9]){
   strcpy(buffer,"CARTON|");
   for(i=0;i<3;i++){
     for(j=0;j<9;j++){
-      sprintf(buffer,"%sNum.%d, ",buffer,carton[i][j]);
+      if(carton[i][j]==-1)
+        sprintf(buffer,"%sX, ",buffer,carton[i][j]);
+      else  
+        sprintf(buffer,"%sNum.%d, ",buffer,carton[i][j]);
     }
   }
   
