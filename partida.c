@@ -153,7 +153,7 @@ int partida_clean(Partida** partida){
 int partida_sacar_jugador(Partida** partida, int id_jugador){
 	int i;
 
-	if(partida == NULL){
+	if(*partida == NULL){
 		return 0;
 	}
 

@@ -357,7 +357,7 @@ int ingresar_jugador(Jugador* jugador[40]){
 int buscar_jugador(Jugador* j[],int id){
 	int i;
 	for(i=0;i<MAX_CLIENTS;i++){
-		if(j[i]->id == id){
+		if(j[i]!=NULL && j[i]->id == id){
 			return i;
 		}
 	}
@@ -799,7 +799,11 @@ void cb_bingo(char *args, Jugador**j, Partida **p){
 	char resp[250];
 	int i;
 
-	if((*p)->iniciada == 0){
+	if(p==NULL){
+		strcpy(resp,"-Err. No estas en partida.");
+		send((*j)->id,resp,strlen(resp),0);
+	}
+	else if((*p)->iniciada == 0){
 		strcpy(resp,"-Err. No procede.");
 		send((*j)->id,resp,strlen(resp),0);
 	}
