@@ -17,14 +17,16 @@ struct jugador{
 
 
 
-int jugador_nuevo(Jugador** jugador);
-int jugador_logout(Jugador* jug);
-int jugador_bingo(const Jugador* jug);
-int jugador_linea(const Jugador* jug);
-int jugador_slinea(const Jugador* jug);
+int jugador_nuevo(Jugador** jug);
+
+
+int jugador_bingo(Jugador* jug);
+int jugador_linea(Jugador* jug);
+int jugador_slinea(Jugador* jug);
 
 int jugador_registrar(const char* username, const char* pass);
-int jugador_login(Jugador** j, const char pass[128]);
+int jugador_login(Jugador* jug, const char pass[128]);
+int jugador_logout(Jugador* jug);
 int jugador_registrado(const char username[40]);
 
 #endif

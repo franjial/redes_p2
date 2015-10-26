@@ -6,30 +6,30 @@
  * Crea un nuevo jugador. Si las credenciales son incorrectas no lo crea
  * y devuelve 0.
  */
-int jugador_nuevo(Jugador** jugador){
-	/**/	
+int jugador_nuevo(Jugador** jug){
+	/**/
 	int i,j;
 
-	*jugador = (Jugador*) malloc(sizeof(Jugador));
-	(*jugador)->id_partida = -1; /*ninguna partida asignada inicialmente*/
-	strcpy((*jugador)->username,"DESCONOCIDO"); /*inicialmente desconocido*/
+	*jug = (Jugador*) malloc(sizeof(Jugador));
+	(*jug)->id_partida = -1; /*ninguna partida asignada inicialmente*/
+	strcpy((*jug)->username,"DESCONOCIDO"); /*inicialmente desconocido*/
 
 
 	/*inicializar un carton vacio*/
 	for(i=0;i<3;i++){
 		for(j=0;j<9;j++){
-			(*jugador)->carton[i][j]=-1;
+			(*jug)->carton[i][j]=-1;
 		}
 	}
-	
-
 
 	return 1;
 }
-int jugador_logout(Jugador* jug){}
-int jugador_bingo(const Jugador* jug){}
-int jugador_linea(const Jugador* jug){}
-int jugador_slinea(const Jugador* jug){}
+
+
+
+int jugador_bingo(Jugador* jug){}
+int jugador_linea(Jugador* jug){}
+int jugador_slinea(Jugador* jug){}
 
 /**
  * Registra un usuario. Si existe alguien con el username indicado
@@ -78,13 +78,11 @@ int jugador_registrar(const char* username, const char* pass){
  * y lo marca como logeado. Si hay error devuelve -1. Si credenciales incorrectos
  * devuelve -1.
  */
-int jugador_login(Jugador** j, const char pass[128]){
+int jugador_login(Jugador* jug, const char pass[128]){
 	FILE *fp;
 	char* linea = NULL;
 	char* pch;
 	int len = 170;
-
-
 
 
 	fp = fopen("users.txt","r");
@@ -96,29 +94,32 @@ int jugador_login(Jugador** j, const char pass[128]){
 		while(getline(&linea,&len,fp) != -1){
 			/*leer linea a linea hasta encontrar usuario*/
 			pch = strtok(linea," ");
-			if(strcmp(pch,(*j)->username) == 0){
+			if(strcmp(pch,jug->username) == 0){
 				/*comprobar password*/
 				pch = strtok(NULL," \n");
 				if(strcmp(pch,pass) == 0){
-					(*j)->logeado = 1;
+					jug->logeado = 1;
 					fclose(fp);
 					return 1;
 				}
 				else{
-					(*j)->logeado = 0;
+					jug->logeado = 0;
 					fclose(fp);
 					return 0;
 				}
 			}
 			else{
 				/*usuario no registrado*/
-				(*j)->logeado=0;
+				jug->logeado=0;
 			}
 		}
 		fclose(fp);
 		return 0;
 	}
 }
+
+
+int jugador_logout(Jugador* jug){}
 
 
 /**

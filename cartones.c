@@ -21,9 +21,9 @@ void carton_nuevo(int carton[3][9]){
   }
 
 
-  bombo_gen(&bombo,len,1); /*90 bolas empezando por la 1*/
+  bombo_gen(bombo,len,1); /*90 bolas empezando por la 1*/
   while(vacias!=0 || bombo!=NULL){
-    n=bombo_pop(&bombo,&len);
+    n=bombo_pop(bombo,&len);
 
     if(n<10){
       for(i=0;i<3;i++){
@@ -108,7 +108,7 @@ void carton_nuevo(int carton[3][9]){
     }
 
   }
-  bombo_clean(&bombo);
+  bombo_clean(bombo);
 
 
 
@@ -165,9 +165,9 @@ void carton_str(char buffer[250], int carton[3][9]){
     for(j=0;j<9;j++){
       if(carton[i][j]==-1)
         sprintf(buffer,"%sX, ",buffer,carton[i][j]);
-      else  
+      else
         sprintf(buffer,"%sNum.%d, ",buffer,carton[i][j]);
     }
   }
-  
+
 }

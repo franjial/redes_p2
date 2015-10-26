@@ -22,7 +22,7 @@ static Jugador* jugador[40];
  */
 
 typedef
-void (*cmd_func_t)(char *buffer, Jugador** j, Partida** p);
+void (*cmd_func_t)(char *buffer, Jugador* j, Partida* p);
 
 typedef
 struct command{
@@ -35,32 +35,32 @@ struct command{
 void manejador(int signum);
 void sacar_bolas(int signum);
 
-int buscar_partida(Jugador** jugador);
-int ingresar_jugador(Jugador* jugador[40]);
-int buscar_jugador(Jugador* j[],int id);
+int asignar_partida(Jugador* jugador);
+int ingresar_cliente(void);
+int buscar_jugador(int id);
 
 
-void cmd_ini(Command** cmd_head);
-void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador** j, Partida** p));
-int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p);
-void cmd_clean(Command** cmd_head);
+void cmd_ini(Command* cmd_head);
+void cmd_reg(Command* cmd_head, char *buffer, void (*cb)(char *buffer, Jugador* j, Partida* p));
+int cmd_exe(Command* cmd_head, char *buffer, Jugador* j, Partida* p);
+void cmd_clean(Command* cmd_head);
 
 
 /* comandos disponibles */
-void cb_who(char *args, Jugador** j, Partida** p);
-void cb_usuario(char *args, Jugador** j, Partida** p);
-void cb_password(char *args, Jugador** j, Partida** p);
-void cb_register(char *args, Jugador** j, Partida** p);
-void cb_iniciar_partida(char *args, Jugador** j, Partida** p);
-void cb_carton(char *args, Jugador**j, Partida **p);
-void cb_partida(char *args, Jugador**j, Partida **p);
-void cb_salir(char *args, Jugador**j, Partida **p);
-void cb_bingo(char *args, Jugador**j, Partida **p);
-void cb_linea(char *args, Jugador**j, Partida **p);
-void cb_slinea(char *args, Jugador**j, Partida **p);
+void cb_who(char *args, Jugador* j, Partida* p);
+void cb_usuario(char *args, Jugador* j, Partida* p);
+void cb_password(char *args, Jugador* j, Partida* p);
+void cb_register(char *args, Jugador* j, Partida* p);
+void cb_iniciar_partida(char *args, Jugador* j, Partida* p);
+void cb_carton(char *args, Jugador *j, Partida *p);
+void cb_partida(char *args, Jugador *j, Partida *p);
+void cb_salir(char *args, Jugador *j, Partida *p);
+void cb_bingo(char *args, Jugador *j, Partida *p);
+void cb_linea(char *args, Jugador *j, Partida *p);
+void cb_slinea(char *args, Jugador *j, Partida *p);
 
-void cb_cerrar(char *args, Jugador**j, Partida **p);
-void cb_clients(char *args, Jugador**j, Partida **p);
+void cb_cerrar(char *args, Jugador *j, Partida *p);
+void cb_clients(char *args, Jugador *j, Partida *p);
 
 
 #endif
