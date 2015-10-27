@@ -19,10 +19,6 @@ int
 main(int argc, char* argv[]){
 	int i,j;
 
-	Command* cmd_cli = NULL;
-
-
-
 
 	/*variables auxiliares para registrar jugadores*/
 	char reg_username[40];
@@ -46,23 +42,22 @@ main(int argc, char* argv[]){
 	int keep_going=1;
 	int bola;
 
-
-
-
-	cmd_ini(cmd_cli);
+	Command* cmd_cli = NULL;
 
 	/*registro de comandos que acepto de los clientes*/
-	cmd_reg(cmd_cli, "WHO", cb_who);
-	cmd_reg(cmd_cli, "USUARIO", cb_usuario);
-	cmd_reg(cmd_cli, "PASSWORD", cb_password);
-	cmd_reg(cmd_cli, "REGISTER", cb_register);
-	cmd_reg(cmd_cli, "INICIAR-PARTIDA", cb_iniciar_partida);
-	cmd_reg(cmd_cli, "CARTON", cb_carton);
-	cmd_reg(cmd_cli, "PARTIDA", cb_partida);
-	cmd_reg(cmd_cli, "SALIR", cb_salir);
-	cmd_reg(cmd_cli, "BINGO", cb_bingo);
-	cmd_reg(cmd_cli, "UNA-LINEA", cb_linea);
-	cmd_reg(cmd_cli, "DOS-LINEAS", cb_slinea);
+	cmd_reg(&cmd_cli, "WHO", cb_who);
+	cmd_reg(&cmd_cli, "USUARIO", cb_usuario);
+	cmd_reg(&cmd_cli, "PASSWORD", cb_password);
+	cmd_reg(&cmd_cli, "REGISTER", cb_register);
+	cmd_reg(&cmd_cli, "INICIAR-PARTIDA", cb_iniciar_partida);
+	cmd_reg(&cmd_cli, "CARTON", cb_carton);
+	cmd_reg(&cmd_cli, "PARTIDA", cb_partida);
+	cmd_reg(&cmd_cli, "SALIR", cb_salir);
+	cmd_reg(&cmd_cli, "BINGO", cb_bingo);
+	cmd_reg(&cmd_cli, "UNA-LINEA", cb_linea);
+	cmd_reg(&cmd_cli, "DOS-LINEAS", cb_slinea);
+
+
 
 	/*inicializar punteros a NULL*/
 	for(i=0;i<40;i++){
@@ -260,7 +255,6 @@ main(int argc, char* argv[]){
 
 							/*ejecuta la funcion que le corresponda*/
 							if(jugador[ret]->id_partida == -1){
-								printf("No tiene partida\n");
 								cmd_exe(cmd_cli, buffer, jugador[ret], NULL);
 							}
 							else
@@ -328,7 +322,7 @@ int asignar_partida(Jugador* jugador){
 	/*despues buscamos salas vacias*/
 	for(i=0;i<10;i++){
 		if(partida[i]==NULL){
-			partida_nueva(i, partida[i]);
+			partida_nueva(i, &partida[i]);
 			partida_ingresar(partida[i], jugador);
 			jugador->id_partida = i;
 			return i;
@@ -371,31 +365,25 @@ int buscar_jugador(int id){
 
 
 /**
- * cmd_ini inicializa la lista enlazada de comandos
- */
-void cmd_ini(Command* head){
-
-	head = NULL;
-}
-
-/**
  * cmd_reg introduce un nuevo comando en la lista
  */
-void cmd_reg(Command* cmd_head, char *buffer, void (*cb)(char *buffer, Jugador* j, Partida* p)){
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador* j, Partida* p)){
 	Command *cursor;
 
-	if(cmd_head == NULL){
+	if(*cmd_head == NULL){
 
 		/*registrar primer comando*/
-		cmd_head = (Command*) malloc(sizeof(Command));
-		cmd_head->next = NULL;
-		strcpy( cmd_head->buffer, buffer );
-		cmd_head->cb = (*cb);
+		(*cmd_head) = (Command*) malloc(sizeof(Command));
+
+		(*cmd_head)->next = NULL;
+		strcpy( (*cmd_head)->buffer, buffer );
+		(*cmd_head)->cb = (*cb);
+
 
 	}
 
 	else{
-		cursor = cmd_head;
+		cursor = (*cmd_head);
 
 		while(cursor->next != NULL){
 			/*salir cuando estemos en el ultimo*/
@@ -423,25 +411,23 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador* j, Partida* p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
-
-
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
 
 	printf("%s|%s\n",id,args);
 
 
+
 	while(cmd_head!=NULL && strcmp(cmd_head->buffer,id)!=0){
 		/* pone cmd_head al nodo que coincide con comando dentro de buffer,
-	   * o al final de la lista. */
+	     * o al final de la lista. */
+		printf("%s == %s <- buffer\n",cmd_head->buffer,id);
 		cmd_head = cmd_head->next;
 	}
 
 	if(cmd_head != NULL){
 		/*pongo en buffer los argumentos (puede no tener argumentos)*/
 		if(args!=NULL){
-
-			printf("DEBUG: %s\n",args);
 			/*ejecutar funcion indicada en el nodo*/
 			cmd_head->cb(args,j,p);
 		}
@@ -690,15 +676,18 @@ void cb_register(char *args, Jugador* j, Partida* p){
  */
 void cb_iniciar_partida(char *args, Jugador* j, Partida* p){
 	char resp[250];
-	int asignada;
 
-	if(j->logeado==0 || j->id_partida>-1){
+	if(j==NULL){
+		/*no hacer nada*/
+		return;
+	}
+
+	if(j->logeado==0 || j->id_partida > -1){
 		strcpy(resp,"-ERR. Debes estar logeado y no tener partida.");
 		send(j->id,resp,strlen(resp),0);
 	}else{
-		asignada = asignar_partida(j);
-		if(asignada!=-1)
-			sprintf(resp,"+Ok. Ahora estas en partida %d.",asignada);
+		if(asignar_partida(j)!=-1)
+			sprintf(resp,"+Ok. Ahora estas en partida %d.",j->id_partida);
 		else
 			sprintf(resp,"-Err. Todas las partidas estan llenas.");
 

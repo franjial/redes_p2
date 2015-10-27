@@ -40,8 +40,7 @@ int ingresar_cliente(void);
 int buscar_jugador(int id);
 
 
-void cmd_ini(Command* cmd_head);
-void cmd_reg(Command* cmd_head, char *buffer, void (*cb)(char *buffer, Jugador* j, Partida* p));
+void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador* j, Partida* p));
 int cmd_exe(Command* cmd_head, char *buffer, Jugador* j, Partida* p);
 void cmd_clean(Command* cmd_head);
 

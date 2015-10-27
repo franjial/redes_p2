@@ -18,7 +18,7 @@ struct partida{
 }Partida;
 
 
-int partida_nueva(int id, Partida* partida);
+int partida_nueva(int id, Partida** partida);
 int partida_sacar(Partida* partida); /*sacar bola*/
 
 int partida_bingo(Partida* partida, Jugador* jugador); /*comprueba bingo*/

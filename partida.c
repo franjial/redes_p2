@@ -9,15 +9,15 @@
 /**
  * inicializa partida nueva
  */
-int partida_nueva(int id, Partida* partida){
+int partida_nueva(int id, Partida** partida){
 
-	partida = (Partida *) malloc(sizeof(Partida));
-	partida->iniciada = 0;
+	*partida = (Partida *) malloc(sizeof(Partida));
+	(*partida)->iniciada = 0;
 
-	bombo_gen(partida->bombo, 90, 1);
-	partida->fuera = NULL;
-	partida->id = id;
-	partida->njugadores = 0;
+	bombo_gen((*partida)->bombo, 90, 1);
+	(*partida)->fuera = NULL;
+	(*partida)->id = id;
+	(*partida)->njugadores = 0;
 
 }
 
@@ -114,14 +114,18 @@ int partida_slinea(Partida* partida, Jugador* jugador){
 }
 
 int partida_ingresar(Partida* partida, Jugador* jugador){
-	if(partida->njugadores>=4)
+
+	if(partida!=NULL && partida->njugadores<=4 && partida->njugadores > 0){
+		carton_nuevo(jugador->carton);
+		partida->jugadores[partida->njugadores] = jugador;
+		partida->njugadores++;
+
+		return partida->njugadores;
+	}
+	else{
 		return -1;
+	}
 
-	carton_nuevo(jugador->carton);
-	partida->jugadores[partida->njugadores] = jugador;
-	partida->njugadores++;
-
-	return partida->njugadores;
 }
 
 
