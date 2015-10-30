@@ -142,8 +142,7 @@ int partida_clean(Partida** p){
 		}
 	}
 
-	// TODO : con free(*p); no se borra ¿porque?
-	free(partida[(*p)->id]);
+	free(*p);
 
 }
 

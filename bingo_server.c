@@ -309,7 +309,7 @@ void sacar_bolas(int signum){
  *
  *  Recibe:
  *  Jugador** jugador    jugador al que se le asigna partida
- *  
+ *
  *  modifica: (*jugador)->id_partida con nueva partida asignada
  *  devuelve: slot de partida asignada
  *            -1 si no se pudo asignar partida
@@ -426,7 +426,7 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
-	
+
 
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
@@ -443,7 +443,7 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	if(cmd_head != NULL){
 		/*pongo en buffer los argumentos (puede no tener argumentos)*/
 		if(args!=NULL){
-			
+
 			printf("DEBUG: %s\n",args);
 			/*ejecutar funcion indicada en el nodo*/
 			cmd_head->cb(args,j,p);
@@ -852,7 +852,7 @@ void cb_bingo(char *args, Jugador**j, Partida **p){
  *  Condiciones previas:
  *  - Usuario en una partida iniciada
  *
- *	Jugador canta linea, comprobamos que es verdad 
+ *	Jugador canta linea, comprobamos que es verdad
  *  si es asi marcamos linea. Si no tiene linea,
  *  se lo comunicamos.
  *
@@ -897,7 +897,7 @@ void cb_linea(char *args, Jugador**j, Partida **p){
  *  Condiciones previas:
  *  - Usuario en una partida iniciada
  *
- *	Jugador canta segunda linea, comprobamos que es verdad 
+ *	Jugador canta segunda linea, comprobamos que es verdad
  *  si es asi marcamos segunda linea. Si no tiene linea,
  *  se lo comunicamos.
  *
