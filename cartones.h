@@ -10,6 +10,10 @@ struct carton{
 }Carton;
 
 void carton_nuevo(int carton[3][9]);
+
+int carton_bingo(int carton[3][9], int bolas_fuera[90]);
+
+
 void carton_print(int carton[3][9]);
 void carton_str(char buffer[250], int carton[3][9]);
 

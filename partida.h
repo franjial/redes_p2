@@ -6,27 +6,26 @@
 
 typedef
 struct partida{
-	int id;
+	int id; /*posicion en el array de la partida*/
 	int njugadores;
+	int iniciada;
+
 	Jugador* jugadores[4];
 	Jugador* ganador_bingo;
 	Jugador* ganador_linea;
 	Jugador* ganador_slinea;
-	Bola* fuera; /*bolas fuera del bombo*/
+	int fuera[90]; /*bolas fuera del bombo*/
 	Bola* bombo; /*bolas dentro del bombo*/
-	int iniciada;
+
 }Partida;
 
 
-int partida_nueva(int id, Partida** partida);
+void partida_nueva(int id, Partida** partida);
 int partida_sacar(Partida** partida); /*sacar bola*/
 
-int partida_bingo(Partida* partida, Jugador* jugador); /*comprueba bingo*/
-int partida_linea(Partida** partida, Jugador* jugador); /*comprueba linea*/
-int partida_slinea(Partida** partida, Jugador* jugador); /*comprueba segunda linea*/
 
-int partida_ingresar(Partida** partida, Jugador** jugador); /*ingresa un jugador*/
-int partida_clean(Partida** partida);
+int partida_ingresar(Partida** p, Jugador** j); /*ingresa un jugador*/
+void partida_clean(Partida** partida);
 
 int partida_sacar_jugador(Partida** partida, int id_jugador); /*sacar jugador de la partida*/
 

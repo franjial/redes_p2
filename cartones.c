@@ -23,7 +23,7 @@ void carton_nuevo(int carton[3][9]){
 
   bombo_gen(&bombo,len,1); /*90 bolas empezando por la 1*/
   while(vacias!=0 || bombo!=NULL){
-    n=bombo_pop(&bombo,&len);
+    n=bombo_pop(&bombo);
 
     if(n<10){
       for(i=0;i<3;i++){
@@ -134,6 +134,41 @@ void carton_print(int carton[3][9]){
     printf("\n");
   }
 }
+
+/**
+ * carton_bingo(int carton[3][9], Bola* bolas_fuera)
+ *
+ * indica si el carton tiene bingo
+ *
+ * argumento 1: carton del jugador matriz 3x9
+ * argumento 2: lista de bolas que han salido del bombo
+ *
+ * devuelve 1 si el carton tiene bingo
+ *          0 si el carton no tiente bingo
+ *
+ */
+int carton_bingo(int carton[3][9], int bolas_fuera[90]){
+	int i,j;
+
+	/**
+	 * si encuentro numero en carton que no esta en bolas_fuera
+	 * devuelvo 0
+	 */
+
+	for(i=0;i<9;i++){
+		for(j=0;j<3;j++){
+			if(carton[i][j] > 0 && carton[i][j]<=90 && bolas_fuera[carton[i][j]-1] == 0){
+				printf("Falta %d\n",carton[i][j]);
+				return 0;
+			}
+		}
+	}
+
+
+	return 1;
+}
+
+
 
 /*
 void carton_str(char buffer[250], int carton[3][9]){

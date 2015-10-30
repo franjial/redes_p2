@@ -11,9 +11,7 @@ struct bola{
 
 void bombo_gen(Bola **bombo, int len, int desde);
 int bombo_size(Bola *bombo);
-int bombo_pop(Bola **bombo, int* len);
+int bombo_pop(Bola **bombo);
 int bombo_clean(Bola **bombo);
-void print_bombo(Bola *bombo);
-int bombo_find(Bola *bombo, int num);
 
 #endif

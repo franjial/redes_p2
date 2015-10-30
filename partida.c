@@ -7,137 +7,101 @@
 #include "bolas.h"
 
 
-int partida_nueva(int id, Partida** partida){
-
+void partida_nueva(int id, Partida** partida){
+	int i;
 
 	*partida = (Partida *) malloc(sizeof(Partida));
 	(*partida)->iniciada = 0;
 
 	bombo_gen( &((*partida)->bombo), 90, 1);
-	(*partida)->fuera = NULL;
+
 	(*partida)->id = id;
 	(*partida)->njugadores = 0;
+
+	/*inicializar punteros de jugadores a null*/
+	for(i=0;i<4;i++){
+		(*partida)->jugadores[i] = NULL;
+	}
+
+	for(i=0;i<90;i++){
+		(*partida)->fuera[i]=0;
+	}
+
+	(*partida)->ganador_bingo = NULL;
+	(*partida)->ganador_linea = NULL;
+	(*partida)->ganador_slinea = NULL;
 
 }
 
 int partida_sacar(Partida** partida){
-	return bombo_pop(&(*partida)->bombo, NULL);
-}
+	int i;
+	i = bombo_pop(&(*partida)->bombo);
 
-/**
- * Comprueba si un jugador tiene bingo en una partida
- * devuelve 1 si tiene bingo, 0 en caso contrario.
- * -1 si error
- */
-int partida_bingo(Partida* partida, Jugador* jugador){
-	int i,j;
-
-	if(partida == NULL)
-		return -1;
-
-	if(jugador == NULL)
-		return -1;
-
-	for(i=0;i<4;i++){
-		for(j=0;j<9;i++){
-			if(!bombo_find(partida->fuera, jugador->carton[i][j])){
-				/*no bingo*/
-				return 0;
-			}
-		}
+	if(i>0 && i<90){
+		(*partida)->fuera[i-1]=1;
+		return i;
 	}
-	return 1;
+	else{
+		return -1;
+	}
 }
 
+
+
 /**
- * Comprueba si el jugador tiene una linea y es el
- * primero en cantarla. En ese caso, devuelve 1.
- * En caso contrario devuelve 0.
+ * partida_ingresar(Partida**, Jugador **)
+ *
+ * ingresa un jugador en una partida y le asigna un carton
+ * Modifica:
+ *   Jugador -> se le asigna nuevo carton
+ *              se le asigna id_partida
+ *
+ *   Partida -> nuevo jugador en posicion vacia de Partida->jugadores
+ *              se incrementa Partida->njugadores
+ *
+ * Devuelve:
+ *   Si se logra ingresar al nuevo jugador devuelve numero de jugadores en partida
+ *   en caso contrario devuelve -1
+ *
  */
-int partida_linea(Partida** partida, Jugador* jugador){
-	int i,j;
-	int test=1;
+int partida_ingresar(Partida** p, Jugador** j){
+	int i;
 
-	if(partida==NULL) return 0;
-	if(jugador==NULL) return 0;
-	if((*partida)->ganador_linea != NULL) return 0;
+	if((*p)->njugadores >= 4)
+		return -1;
 
+	/*buscar una posicion vacia en la partida para el nuevo participante*/
 	for(i=0;i<4;i++){
-		for(j=0;j<9;j++){
-			if(!bombo_find((*partida)->fuera, jugador->carton[i][j]))
-				test=0;
-		}
-		if(test==1){
-			/*hay linea*/
-			(*partida)->ganador_linea = jugador;
-			return 1;
+		if( (*p)->jugadores[i] == NULL ){
+
+			carton_nuevo((*j)->carton);
+			(*j)->id_partida = (*p)->id;
+
+			(*p)->jugadores[i] = *j;
+			(*p)->njugadores++;
+
+			return (*p)->njugadores;
 		}
 	}
 
 
-	return 0;
+	return -1; /*no se pudo asignar, partida llena*/
+
 }
-
-/**
- * Comprueba si el jugador tiene una segunda linea y ha sido
- * el primero en cantarla en la partida. Si es asi, devuelve 1
- * en caso contrario devuelve 0.
- */
-int partida_slinea(Partida** partida, Jugador* jugador){
-	int i,j;
-	int test=1;
-	int c=0; /*cuenta lineas*/
-
-	if(partida==NULL) return 0;
-	if(jugador==NULL) return 0;
-	if((*partida)->ganador_linea == jugador) return 0; /*para cantar slinea debe haber ganado la primera*/
-	if((*partida)->ganador_slinea != NULL) return 0;
-
-	for(i=0;i<4;i++){
-		for(j=0;j<9;j++){
-			if(!bombo_find((*partida)->fuera, jugador->carton[i][j]))
-				test=0;
-		}
-		if(test==1){
-			/*hay linea*/
-			(*partida)->ganador_slinea = jugador;
-			c++;
-		}
-	}
-
-	if(c > 1)
-		return 1;
-	else
-		return 0;
-}
-
-int partida_ingresar(Partida** partida, Jugador** jugador){
-	if((*partida)->njugadores>=4)
-		return -1;
-
-	carton_nuevo((*jugador)->carton);
-	(*partida)->jugadores[(*partida)->njugadores] = *jugador;
-	(*partida)->njugadores++;
-
-	return (*partida)->njugadores;
-}
-
 
 /**
  * Libera memoria tras terminar una partida y saca
  * a los jugadores. Le asigna un nuevo carton aleatorio
  * a cada uno.
  */
-int partida_clean(Partida** p){
+void partida_clean(Partida** p){
 	int i,j;
 
 	bombo_clean( &(*p)->bombo ); //limpiar bombo
-	bombo_clean( &(*p)->fuera ); //limpiar bombo bolas sacadas
 
 	for(i=0;i<4;i++){
 		if((*p)->jugadores[i]!=NULL){
 			(*p)->jugadores[i]->id_partida = -1;
-			carton_nuevo((*p)->jugadores[i]->carton);
 			(*p)->jugadores[i] = NULL;
 		}
 	}
@@ -180,6 +144,9 @@ void partida_jugadores_str(Partida *partida, char buffer[250]){
 	char aux[55];
 
 	bzero(buffer,sizeof(buffer));
+
+	if( partida == NULL )
+		return;
 
 	for(i=0;i<4;i++){
 		if(partida->jugadores[i]!=NULL){
