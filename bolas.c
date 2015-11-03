@@ -80,26 +80,38 @@ int bombo_pop(Bola **bombo){
 	len = bombo_size(*bombo);
 	pos = rand()%len; /*numero pseudoaleatorio entre 0-(len)*/
 
-	/*dejo el cursor en el padre de la posicion seleccionada*/
-	for(i=0;i<pos-1;i++){
-	  cursor = cursor->next;
-	}
-
-	num = cursor->next->num;
-
-	/*si hay que sacar la ultima posicion*/
-	if(cursor->next->next == NULL){
-		free(cursor->next);
-		cursor->next = NULL;
-	}
-	else{
-		padre = cursor;
-		cursor = cursor->next;
-		sucesor = cursor->next;
+	/*caso especial pos = 0*/
+	if(pos==0){
 		num = cursor->num;
-		padre->next = sucesor;
+		*bombo = cursor->next;
 		free(cursor);
 	}
+	else{
+		/*dejo el cursor en el padre de la posicion seleccionada*/
+		for(i=0;i<pos-1;i++){
+		  cursor = cursor->next;
+		}
+		num = cursor->next->num;
+
+		/*si hay que sacar la ultima posicion*/
+		if(cursor->next->next == NULL){
+			free(cursor->next);
+			cursor->next = NULL;
+		}
+		else{
+			padre = cursor;
+			cursor = cursor->next;
+			sucesor = cursor->next;
+			num = cursor->num;
+			padre->next = sucesor;
+			free(cursor);
+		}
+
+	}
+
+
+
+
 
 	return num;
 }
