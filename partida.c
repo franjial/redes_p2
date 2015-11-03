@@ -118,9 +118,10 @@ void partida_clean(Partida** p){
 int partida_sacar_jugador(Partida** partida, int id_jugador){
 	int i;
 
-	if(*partida == NULL){
+	if(partida == NULL){
 		return 0;
 	}
+
 
 	for(i=0;i<4;i++){
 		if( (*partida)->jugadores[i] != NULL ){

@@ -155,8 +155,8 @@ int carton_bingo(int carton[3][9], int bolas_fuera[90]){
 	 * devuelvo 0
 	 */
 
-	for(i=0;i<9;i++){
-		for(j=0;j<3;j++){
+	for(i=0;i<3;i++){
+		for(j=0;j<9;j++){
 			if(carton[i][j] > 0 && carton[i][j]<=90 && bolas_fuera[carton[i][j]-1] == 0){
 				printf("Falta %d\n",carton[i][j]);
 				return 0;
@@ -169,26 +169,48 @@ int carton_bingo(int carton[3][9], int bolas_fuera[90]){
 }
 
 
-
-/*
-void carton_str(char buffer[250], int carton[3][9]){
+int carton_linea(int carton[3][9], int bolas_fuera[90]){
   int i,j;
-  char aux[4];
-
-  strcpy(buffer,"CARTON|");
+  int test;
   for(i=0;i<3;i++){
+    test = 1;
     for(j=0;j<9;j++){
-      if(carton[i][j]==-1){
-        sprintf(aux,"X, ");
-      }else{
-        sprintf(aux,"Num. %d, ",carton[i][j]);
+      if(carton[i][j] > 0 && carton[i][j]<=90 && bolas_fuera[carton[i][j]-1]==0){
+        test = 0;
       }
-      strcat(buffer,aux);
-      bzero(aux,sizeof(aux));
+    }
+    if(test==1){
+      return 1;
     }
   }
+
+  return 0;
 }
-*/
+
+
+int carton_slinea(int carton[3][9], int bolas_fuera[90]){
+  int i,j;
+  int test;
+  int count=0;
+
+  for(i=0;i<3;i++){
+    test = 1;
+    for(j=0;j<9;j++){
+      if(carton[i][j] > 0 && carton[i][j]<=90 && bolas_fuera[carton[i][j]-1]==0){
+        test = 0;
+      }
+    }
+    if(test==1){
+      count++;
+    }
+  }
+
+  if(count==2)
+    return 1;
+  else
+    return 0;
+}
+
 
 
 void carton_str(char buffer[250], int carton[3][9]){
@@ -200,9 +222,9 @@ void carton_str(char buffer[250], int carton[3][9]){
     for(j=0;j<9;j++){
       if(carton[i][j]==-1)
         sprintf(buffer,"%sX, ",buffer,carton[i][j]);
-      else  
+      else
         sprintf(buffer,"%sNum.%d, ",buffer,carton[i][j]);
     }
   }
-  
+
 }

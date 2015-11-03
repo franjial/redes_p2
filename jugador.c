@@ -6,12 +6,16 @@
  * Crea un nuevo jugador. Si las credenciales son incorrectas no lo crea
  * y devuelve 0.
  */
-int jugador_nuevo(Jugador** jugador){
-	/**/	
+int jugador_nuevo(Jugador** jugador, int slot){
+	/**/
 	int i,j;
 
 	*jugador = (Jugador*) malloc(sizeof(Jugador));
 	(*jugador)->id_partida = -1; /*ninguna partida asignada inicialmente*/
+	(*jugador)->logeado = 0; /*no logeado*/
+	(*jugador)->listo = 0;
+	(*jugador)->slot = slot;
+
 	strcpy((*jugador)->username,"DESCONOCIDO"); /*inicialmente desconocido*/
 
 
@@ -21,15 +25,12 @@ int jugador_nuevo(Jugador** jugador){
 			(*jugador)->carton[i][j]=-1;
 		}
 	}
-	
+
 
 
 	return 1;
 }
-int jugador_logout(Jugador* jug){}
-int jugador_bingo(const Jugador* jug){}
-int jugador_linea(const Jugador* jug){}
-int jugador_slinea(const Jugador* jug){}
+
 
 /**
  * Registra un usuario. Si existe alguien con el username indicado

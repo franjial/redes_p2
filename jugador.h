@@ -18,11 +18,7 @@ struct jugador{
 
 
 
-int jugador_nuevo(Jugador** jugador);
-int jugador_logout(Jugador* jug);
-int jugador_bingo(const Jugador* jug);
-int jugador_linea(const Jugador* jug);
-int jugador_slinea(const Jugador* jug);
+int jugador_nuevo(Jugador** jugador,int slot);
 
 int jugador_registrar(const char* username, const char* pass);
 int jugador_login(Jugador** j, const char pass[128]);
