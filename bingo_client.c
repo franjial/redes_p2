@@ -25,7 +25,7 @@ main(int argc, char* argv[]){
 	}
 
 	sockname.sin_family = AF_INET;
-	sockname.sin_port = htons(5000);
+	sockname.sin_port = htons(2050);
 	sockname.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	/*solicitar conexion con el servidor*/

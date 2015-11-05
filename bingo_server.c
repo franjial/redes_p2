@@ -20,36 +20,30 @@ main(int argc, char* argv[]){
 	int i,j;
 
 	Command* cmd_cli = NULL;
+	Command* cmd_srv = NULL;
 
-
-
-
-	/*variables auxiliares para registrar jugadores*/
-	char reg_username[40];
-	char reg_pass[128];
 
 	int sd, new_sd;
 	struct sockaddr_in sockname, from;
 
 	char buffer[MSG_SIZE];
-	char * pch; /*para strtok*/
 
 	socklen_t from_len;
 	struct hostent * host;
 	fd_set readfds, auxfds;
 	int on, ret;
+
 	int salida;
 	int recibidos;
-	int nconexiones=0; /*clientes conectados*/
-	char identificador[MSG_SIZE];
-	int todos_listos;
-	int keep_going=1;
 	int bola;
 
 
 
-
+	/*inicializa lista comandos aceptados desde cliente*/
 	cmd_ini(&cmd_cli);
+
+	/*inicializa lista comandos aceptados desde servidor*/
+	cmd_ini(&cmd_srv);
 
 	/*registro de comandos que acepto de los clientes*/
 	cmd_reg(&cmd_cli, "WHO", &cb_who);
@@ -65,6 +59,9 @@ main(int argc, char* argv[]){
 	cmd_reg(&cmd_cli, "BINGO", &cb_bingo);
 	cmd_reg(&cmd_cli, "UNA-LINEA", &cb_linea);
 	cmd_reg(&cmd_cli, "DOS-LINEAS", &cb_slinea);
+
+	/*registro de comandos que acepto desde el servidor*/
+	cmd_reg(&cmd_srv, "SALIR", &cb_cerrar);
 
 	/*inicializar punteros a NULL*/
 	for(i=0;i<40;i++){
@@ -89,7 +86,7 @@ main(int argc, char* argv[]){
 	ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
 	sockname.sin_family = AF_INET;
-	sockname.sin_port = htons(5000);
+	sockname.sin_port = htons(2050);
 	sockname.sin_addr.s_addr = INADDR_ANY;
 
 	if(bind(sd,(struct sockaddr *) &sockname, sizeof(sockname)) == -1){
@@ -123,7 +120,7 @@ main(int argc, char* argv[]){
 
 
 	/*servidor acepta una peticion*/
-	while(1){
+	while(salir==0){
 
 		/*interrupcion periodica para sacar bolas*/
 
@@ -172,7 +169,7 @@ main(int argc, char* argv[]){
 							for(j=0;j<4;j++){
 								if(partida[i]->jugadores[j]!=NULL){
 									bzero(buffer,sizeof(buffer));
-									sprintf(buffer,"El %d!",bola);
+									sprintf(buffer,"NÚMERO-OBTENIDO %d",bola);
 									send(partida[i]->jugadores[j]->id,buffer,strlen(buffer),0);
 								}
 							}
@@ -206,6 +203,7 @@ main(int argc, char* argv[]){
 		auxfds = readfds;
 		salida = select(FD_SETSIZE, &auxfds, NULL, NULL, NULL);
 		if(salida > 0){
+
 			for(i=0;i<FD_SETSIZE;i++){
 
 				/*buscar socket por donde se establecio comunicacion*/
@@ -245,37 +243,11 @@ main(int argc, char* argv[]){
 						fgets(buffer, sizeof(buffer), stdin);
 
 
-						/*cerrar todos los clientes y cerrar servidor*/
-						if(strcmp(buffer,"SALIR\n") == 0 || salir == 1){
-
-							i=0;
-							while(i<10){
-								if(partida[i]!=NULL){
-									free(partida[i]);
-									partida[i]=NULL;
-								}
-								i++;
-							}
-
-
-							// enviar a todos los clientes salir
-							i=0;
-							while(i<40){
-								if(jugador[i]!=NULL){
-									send(jugador[i]->id,"SALIR",5,0);
-									free(jugador[i]);
-									jugador[i]=NULL;
-								}
-								i++;
-							}
-
-
-							close(sd);
-							exit(-1);
-						}
-						else{
+						if(!cmd_exe(cmd_srv, buffer, NULL, NULL)){
 							printf("-Err. Comando desconocido.\n");
 						}
+
+
 					}
 
 					else{
@@ -308,8 +280,7 @@ main(int argc, char* argv[]){
 
 	}
 
-
-
+	close(sd);
 	return EXIT_SUCCESS;
 }
 
@@ -802,8 +773,6 @@ void cb_salir_partida(char *args, Jugador**j, Partida** p){
 		sprintf(buffer,"-Err. Debes estar en una partida.");
 		send((*j)->id, buffer, strlen(buffer), 0);
 	}
-
-
 }
 
 /**
@@ -1106,28 +1075,33 @@ void cb_slinea(char *args, Jugador**j, Partida **p){
  *
  */
 void cb_cerrar(char *args, Jugador**j, Partida **p){
+	/*cerrar todos los clientes y cerrar servidor*/
 
-}
+	int i=0;
 
-/**
- * Function: cb_clients
- * --------------------
- *
- *	Imprime numero de clientes conectados
- *
- *  char *args    argumentos del comando (NULL)
- *  Jugador** j   NULL
- *  Partida** p   NULL
- *
- *  returns: void
- *
- */
-void cb_clients(char *args, Jugador**j, Partida **p){
-	int i;
-	int count = 0;
-
-	for(i=0;i<40;i++){
-		if(jugador[i]!=NULL)
-			count++;
+	/*limpia partidas*/
+	while(i<10){
+		if(partida[i]!=NULL){
+			free(partida[i]);
+			partida[i]=NULL;
+		}
+		i++;
 	}
+
+
+	// enviar a todos los clientes salir
+	i=0;
+	while(i<40){
+		if(jugador[i]!=NULL){
+			send(jugador[i]->id,"SALIR",5,0);
+			free(jugador[i]);
+			jugador[i]=NULL;
+		}
+		i++;
+	}
+
+
+	salir=1;
+
 }
+

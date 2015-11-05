@@ -62,7 +62,7 @@ void cb_linea(char *args, Jugador**j, Partida **p);
 void cb_slinea(char *args, Jugador**j, Partida **p);
 
 void cb_cerrar(char *args, Jugador**j, Partida **p);
-void cb_clients(char *args, Jugador**j, Partida **p);
+
 
 
 #endif
