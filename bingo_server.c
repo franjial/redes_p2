@@ -289,6 +289,7 @@ main(int argc, char* argv[]){
 
 void manejador(int signum){
 	salir = 1;
+	cb_cerrar(NULL,NULL,NULL);
 }
 
 void sacar_bolas(int signum){
