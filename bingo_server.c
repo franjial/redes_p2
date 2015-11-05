@@ -57,6 +57,7 @@ main(int argc, char* argv[]){
 	cmd_reg(&cmd_cli, "PASSWORD", &cb_password);
 	cmd_reg(&cmd_cli, "REGISTER", &cb_register);
 	cmd_reg(&cmd_cli, "INICIAR-PARTIDA", &cb_iniciar_partida);
+	cmd_reg(&cmd_cli, "SALIR-PARTIDA", &cb_salir_partida);
 	cmd_reg(&cmd_cli, "REGISTER2", &cb_register_bis);
 	cmd_reg(&cmd_cli, "CARTON", &cb_carton);
 	cmd_reg(&cmd_cli, "PARTIDA", &cb_partida);
@@ -441,7 +442,6 @@ void cmd_reg(Command** cmd_head, char *buffer, void (*cb)(char *buffer, Jugador*
 		strcpy(cursor->next->buffer, buffer);
 		cursor->next->cb = (*cb);
 	}
-
 }
 
 /**
@@ -713,8 +713,6 @@ void cb_register_bis(char *args, Jugador** j, Partida** p){
 		strcpy(resp,"+Err. Usuario ya existente.");
 		send((*j)->id,resp,strlen(resp),0);
 	}
-
-
 }
 
 /**
@@ -758,6 +756,55 @@ void cb_iniciar_partida(char *args, Jugador** j, Partida** p){
 	}
 }
 
+/**
+ * Function: cb_salir_partida
+ * --------------------
+ *
+ *  Condiciones previas:
+ *  - Estar ya en una partida
+ *
+ *	Se saca al jugador de una partida
+ *
+ *  char *args    (NULL) No recibe parametros
+ *  Jugador** j   jugador
+ *  Partida** p   partida (donde esta el jugador)
+ *
+ *  returns: void
+ *
+ */
+void cb_salir_partida(char *args, Jugador**j, Partida** p){
+	char buffer[250];
+	int i;
+
+	/*si no se pasa  j, no hacer nada*/
+	if(j==NULL)
+		return;
+
+	/*si esta en partida*/
+	if((*j)->id_partida > -1){
+		if(partida_sacar_jugador(&partida[(*j)->id_partida], (*j)->id)){
+			sprintf(buffer,"+Ok. Has salido de partida.",(*j)->username);
+		}
+		else{
+			sprintf(buffer,"-Err. Ocurrio un error. No puedes salir.");
+		}
+
+		send((*j)->id, buffer, strlen(buffer), 0);
+
+		/*comunicar a demas jugadores*/
+		sprintf(buffer,"+Ok. Jugador %s ha salido.",(*j)->username);
+		for(i=0;i<4;i++){
+			if( (*p)->jugadores[i] != NULL)
+				send( (*p)->jugadores[i]->id, buffer, strlen(buffer), 0);
+		}
+	}
+	else{
+		sprintf(buffer,"-Err. Debes estar en una partida.");
+		send((*j)->id, buffer, strlen(buffer), 0);
+	}
+
+
+}
 
 /**
  * Function: cb_carton
@@ -786,7 +833,6 @@ void cb_carton(char *args, Jugador**j, Partida **p){
 		carton_str(resp,(*j)->carton);
 		send((*j)->id,resp,strlen(resp),0);
 	}
-
 }
 
 /**
@@ -826,8 +872,6 @@ void cb_partida(char *args, Jugador **j, Partida **p){
 	}
 
 	send((*j)->id,resp,strlen(resp),0);
-
-
 }
 
 
@@ -852,17 +896,22 @@ void cb_salir(char *args, Jugador**j, Partida **p){
 	int i;
 	char buffer[250];
 
+	printf("salir jugador %s\n",(*j)->username);
+
 	partida_sacar_jugador(p,(*j)->id);
 
 	sprintf(buffer,"+Ok. Jugador %s ha abandonado la partida.",(*j)->username);
 
-	for(i=0;i<4;i++){
-		if((*p)->jugadores[i]!=NULL){
-			send((*p)->jugadores[i]->id, buffer, strlen(buffer), 0);
+	/*si estaba en partida*/
+	if(p!=NULL){
+		for(i=0;i<4;i++){
+			if((*p)->jugadores[i]!=NULL){
+				send((*p)->jugadores[i]->id, buffer, strlen(buffer), 0);
+			}
 		}
 	}
 
-	strcmp(buffer,"+Ok. Desconexión procesada.");
+	strcpy(buffer,"+Ok. Desconexion procesada.");
 	send((*j)->id, buffer, strlen(buffer), 0);
 
 	jugador[(*j)->slot] = NULL;
@@ -943,8 +992,6 @@ void cb_bingo(char *args, Jugador**j, Partida **p){
  *  returns: void
  *
  */
-
-
 void cb_linea(char *args, Jugador**j, Partida **p){
 	char resp[250];
 	int i;

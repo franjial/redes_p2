@@ -53,6 +53,7 @@ void cb_password(char *args, Jugador** j, Partida** p);
 void cb_register(char *args, Jugador** j, Partida** p);
 void cb_register_bis(char *args, Jugador** j, Partida** p);
 void cb_iniciar_partida(char *args, Jugador** j, Partida** p);
+void cb_salir_partida(char *args, Jugador** j, Partida** p);
 void cb_carton(char *args, Jugador**j, Partida **p);
 void cb_partida(char *args, Jugador**j, Partida **p);
 void cb_salir(char *args, Jugador**j, Partida **p);

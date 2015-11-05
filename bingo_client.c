@@ -59,20 +59,28 @@ main(int argc, char* argv[]){
 			}
 
 			else{
-				printf("\n%s\n",buffer);
+				printf("%s\n",buffer);
 			}
 
 		}else{ /*informacion por teclado*/
 			bzero(buffer,sizeof(buffer));
 			fgets(buffer,sizeof(buffer),stdin);
 
+			/* si SALIR marcar para cerrar cliente */
 			if(strcmp(buffer, "SALIR\n") == 0){
 				fin = 1;
+				send(sd,buffer,sizeof(buffer),0);
+				recv(sd, buffer, sizeof(buffer), 0);
+				printf("%s\n",buffer);
 			}
 
-			if(strlen(buffer)>0 && strcmp(buffer,"\n")!=0){
+			else if(strlen(buffer)>0 && strcmp(buffer,"\n")!=0){
 				send(sd,buffer,sizeof(buffer),0);
 			}
+			else{
+				/* no hacer nada */
+			}
+
 
 		}
 

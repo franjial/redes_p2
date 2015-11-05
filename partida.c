@@ -126,6 +126,7 @@ int partida_sacar_jugador(Partida** partida, int id_jugador){
 	for(i=0;i<4;i++){
 		if( (*partida)->jugadores[i] != NULL ){
 			if( (*partida)->jugadores[i]->id == id_jugador ){
+				(*partida)->jugadores[i]->id_partida = -1;
 				(*partida)->jugadores[i]=NULL;
 				(*partida)->njugadores--;
 				return 1;
