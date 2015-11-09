@@ -21,7 +21,7 @@ struct jugador{
 int jugador_nuevo(Jugador** jugador,int slot);
 
 int jugador_registrar(const char* username, const char* pass);
-int jugador_login(Jugador** j, const char pass[128]);
+int jugador_login(Jugador* j, const char pass[128]);
 int jugador_registrado(const char username[40]);
 
 #endif

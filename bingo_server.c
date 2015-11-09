@@ -596,7 +596,7 @@ void cb_password(char *args, Jugador** j, Partida** p){
 		strcpy(resp,"-Err. Debes especificar primero tu nombre de usuario.");
 		send((*j)->id,resp,strlen(resp),0);
 	}
-	else if( jugador_login(j, password) > 0 ){
+	else if( jugador_login(*j, password) > 0 ){
 
 		strcpy(resp,"+Ok. Login correcto.");
 		send((*j)->id,resp,strlen(resp),0);

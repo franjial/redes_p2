@@ -79,7 +79,7 @@ int jugador_registrar(const char* username, const char* pass){
  * y lo marca como logeado. Si hay error devuelve -1. Si credenciales incorrectos
  * devuelve -1.
  */
-int jugador_login(Jugador** j, const char pass[128]){
+int jugador_login(Jugador* j, const char pass[128]){
 	FILE *fp;
 	char* linea = NULL;
 	char* pch;
@@ -97,23 +97,23 @@ int jugador_login(Jugador** j, const char pass[128]){
 		while(getline(&linea,&len,fp) != -1){
 			/*leer linea a linea hasta encontrar usuario*/
 			pch = strtok(linea," ");
-			if(strcmp(pch,(*j)->username) == 0){
+			if(strcmp(pch,j->username) == 0){
 				/*comprobar password*/
 				pch = strtok(NULL," \n");
 				if(strcmp(pch,pass) == 0){
-					(*j)->logeado = 1;
+					j->logeado = 1;
 					fclose(fp);
 					return 1;
 				}
 				else{
-					(*j)->logeado = 0;
+					j->logeado = 0;
 					fclose(fp);
 					return 0;
 				}
 			}
 			else{
 				/*usuario no registrado*/
-				(*j)->logeado=0;
+				j->logeado=0;
 			}
 		}
 		fclose(fp);
