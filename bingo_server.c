@@ -50,10 +50,9 @@ main(int argc, char* argv[]){
 	/*cmd_reg(&cmd_cli, "WHO", &cb_who);*/
 	cmd_reg(&cmd_cli, "USUARIO", &cb_usuario);
 	cmd_reg(&cmd_cli, "PASSWORD", &cb_password);
-	cmd_reg(&cmd_cli, "REGISTER", &cb_register);
 	cmd_reg(&cmd_cli, "INICIAR-PARTIDA", &cb_iniciar_partida);
 	cmd_reg(&cmd_cli, "SALIR-PARTIDA", &cb_salir_partida);
-	cmd_reg(&cmd_cli, "REGISTER2", &cb_register_bis);
+	cmd_reg(&cmd_cli, "REGISTER", &cb_register_bis);
 	cmd_reg(&cmd_cli, "CARTON", &cb_carton);
 	cmd_reg(&cmd_cli, "PARTIDA", &cb_partida);
 	cmd_reg(&cmd_cli, "SALIR", &cb_salir);
@@ -720,6 +719,8 @@ void cb_register_bis(char *args, Jugador** j, Partida** p){
 	char password[128];
 	char resp[250];
 
+	bzero(username,sizeof(username));
+	bzero(password,sizeof(password));
 	sscanf(args,"-u %s -p %s",username,password);
 
 	if(jugador_registrar(username,password)){

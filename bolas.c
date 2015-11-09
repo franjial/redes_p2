@@ -3,7 +3,16 @@
 #include <time.h>
 #include <stdlib.h>
 
-/*genera bolas en un rango*/
+/**
+ * void bombo_gen(Bola **bombo, int len, int desde)
+ *
+ * genera una lista de bolas comenzando por numero indicado
+ * por el parametro desde y hasta introducir len bolas.
+ *
+ * ejemplo: bombo_gen(&lista, 90, 1)
+ *          genera 90 bolas desde la 1 hasta la 90.
+ *          1,2,3,4,....89,90
+ */
 void bombo_gen(Bola **bombo, int len, int desde){
   int i=desde;
   Bola *cursor;
@@ -25,6 +34,8 @@ void bombo_gen(Bola **bombo, int len, int desde){
 
 
 /**
+ * int bombo_size(Bola *bombo)
+ *
  * Devuelve numero de bolas que quedan en el bombo
  */
 int bombo_size(Bola *bombo){
@@ -44,7 +55,9 @@ int bombo_size(Bola *bombo){
 
 
 /**
- * Saca del bombo una bola al azar
+ * int bombo_pop(Bola **bombo)
+ *
+ * Saca de la lista (bombo) una bola al azar
  */
 int bombo_pop(Bola **bombo){
 	int pos;
@@ -119,7 +132,9 @@ int bombo_pop(Bola **bombo){
 
 
 /**
- * Vacia el bombo. Devuelve bolas sacadas
+ * int bombo_clean(Bola **bombo)
+ *
+ * Vacia el bombo. Devuelve numero de bolas sacadas.
  */
 int bombo_clean(Bola **bombo){
 	Bola *aux;

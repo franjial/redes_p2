@@ -1,6 +1,7 @@
 #include "jugador.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /**
  * Crea un nuevo jugador. Si las credenciales son incorrectas no lo crea
@@ -48,8 +49,13 @@ int jugador_registrar(const char* username, const char* pass){
 		return -1;
 	}
 
+	if( access("users.txt", F_OK ) == -1 && (fp=fopen("users.txt","a+")) == NULL ) {
+    	//no existe el fichero, creo 
+    	free(linea);
+    	return -1;
 
-	if( (fp=fopen("users.txt","w+")) == NULL ){
+	}
+	else if( (fp=fopen("users.txt","r+")) == NULL ){
 		free(linea);
 		return -1;
 	}
