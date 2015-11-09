@@ -310,6 +310,32 @@ main(int argc, char* argv[]){
 								}
 							}
 						}
+
+						else if(recibidos==0){ /*cliente desconectado*/
+							ret = buscar_jugador(jugador,i);
+							
+							if(ret>-1 && jugador[ret]!=NULL){
+
+								if(jugador[ret]->id_partida != -1){
+
+									for(j=0;j<4;j++){
+										if(partida[jugador[ret]->id_partida]->jugadores[j] != NULL){
+											sprintf(buffer,"+Ok. Jugador %s ha abandonado la partida.",jugador[ret]->username);
+											send(partida[jugador[ret]->id_partida]->jugadores[j]->id, buffer, strlen(buffer), 0);
+										}
+									}
+									partida_sacar_jugador(partida[jugador[ret]->id_partida],jugador[ret]->id);
+
+								}
+
+								free(jugador[ret]);
+								jugador[ret]=NULL;
+							}
+
+						}
+						else{
+							/*error al recibir datos del servidor*/
+						}
 					}
 				}
 			} /*END-FOR*/
@@ -766,7 +792,7 @@ void cb_iniciar_partida(char *args, Jugador** j, Partida** p){
 	else{
 		asignada = buscar_partida(j);
 		if(asignada!=-1)
-			sprintf(resp,"+Ok. Ahora estas en partida %d.",asignada);
+			sprintf(resp,"+Ok. Ahora estas en partida %d. Esperando jugadores.",asignada);
 		else
 			sprintf(resp,"-ERR. Todas las partidas estan llenas.");
 

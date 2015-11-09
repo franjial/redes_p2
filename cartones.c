@@ -255,12 +255,16 @@ void carton_str(char buffer[250], int carton[3][9]){
       if(j==8){
         if(carton[i][j]==-1)
           sprintf(buffer,"%sX;",buffer,carton[i][j]);
+        //else if(carton[i][j]<10)
+        //  sprintf(buffer,"%sNum.0%d;",buffer,carton[i][j]);
         else
           sprintf(buffer,"%sNum.%d;",buffer,carton[i][j]);
       }
       else{
         if(carton[i][j]==-1)
           sprintf(buffer,"%sX,",buffer,carton[i][j]);
+        //else if(carton[i][j]<10)
+        //  sprintf(buffer,"%sNum.0%d,",buffer,carton[i][j]);
         else
           sprintf(buffer,"%sNum.%d,",buffer,carton[i][j]);
       }
