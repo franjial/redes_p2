@@ -165,7 +165,7 @@ main(int argc, char* argv[]){
 
 					else if(partida[i]->iniciada == 1){
 						/*partida iniciada, sacar bola del bombo*/
-						bola = partida_sacar(&partida[i]);
+						bola = partida_sacar(partida[i]);
 						if(bola > 0){
 							for(j=0;j<4;j++){
 								if(partida[i]->jugadores[j]!=NULL){
@@ -330,7 +330,7 @@ int buscar_partida(Jugador** jugador){
 	for(i=0;i<10;i++){
 		if(partida[i]!=NULL){
 			if( partida[i]->njugadores < 4  && partida[i]->iniciada == 0){
-				partida_ingresar(&partida[i], jugador);
+				partida_ingresar(partida[i], *jugador);
 				return i;
 			}
 		}
@@ -340,7 +340,7 @@ int buscar_partida(Jugador** jugador){
 	for(i=0;i<10;i++){
 		if(partida[i]==NULL){
 			partida_nueva(i, &partida[i]);
-			partida_ingresar(&partida[i], jugador);
+			partida_ingresar(partida[i], *jugador);
 			return i;
 		}
 	}

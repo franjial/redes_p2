@@ -21,10 +21,11 @@ struct partida{
 
 
 void partida_nueva(int id, Partida** partida);
-int partida_sacar(Partida** partida); /*sacar bola*/
+int partida_sacar(Partida* partida); /*sacar bola*/
 
 
-int partida_ingresar(Partida** p, Jugador** j); /*ingresa un jugador*/
+int partida_ingresar(Partida* p, Jugador* j); /*ingresa un jugador*/
+
 void partida_clean(Partida** partida);
 
 int partida_sacar_jugador(Partida** partida, int id_jugador); /*sacar jugador de la partida*/

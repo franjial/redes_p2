@@ -34,13 +34,16 @@ void partida_nueva(int id, Partida** partida){
 }
 
 
-
-int partida_sacar(Partida** partida){
+/**
+ * Saca una bola del bombo de la partida y la devuelve.
+ * Si se produce algun error, devuelve -1.
+ */
+int partida_sacar(Partida* partida){
 	int i;
-	i = bombo_pop(&(*partida)->bombo);
+	i = bombo_pop(&partida->bombo);
 
 	if(i>0 && i<90){
-		(*partida)->fuera[i-1]=1;
+		partida->fuera[i-1]=1;
 		return i;
 	}
 	else{
@@ -66,23 +69,23 @@ int partida_sacar(Partida** partida){
  *   en caso contrario devuelve -1
  *
  */
-int partida_ingresar(Partida** p, Jugador** j){
+int partida_ingresar(Partida* p, Jugador* j){
 	int i;
 
-	if((*p)->njugadores >= 4)
+	if(p->njugadores >= 4)
 		return -1;
 
 	/*buscar una posicion vacia en la partida para el nuevo participante*/
 	for(i=0;i<4;i++){
-		if( (*p)->jugadores[i] == NULL ){
+		if( p->jugadores[i] == NULL ){
 
-			carton_nuevo((*j)->carton);
-			(*j)->id_partida = (*p)->id;
+			carton_nuevo(j->carton);
+			j->id_partida = p->id;
 
-			(*p)->jugadores[i] = *j;
-			(*p)->njugadores++;
+			p->jugadores[i] = j;
+			p->njugadores++;
 
-			return (*p)->njugadores;
+			return p->njugadores;
 		}
 	}
 
