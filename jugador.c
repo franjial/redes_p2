@@ -13,7 +13,6 @@ int jugador_nuevo(Jugador** jugador, int slot){
 	*jugador = (Jugador*) malloc(sizeof(Jugador));
 	(*jugador)->id_partida = -1; /*ninguna partida asignada inicialmente*/
 	(*jugador)->logeado = 0; /*no logeado*/
-	(*jugador)->listo = 0;
 	(*jugador)->slot = slot;
 
 	strcpy((*jugador)->username,"DESCONOCIDO"); /*inicialmente desconocido*/
@@ -25,6 +24,7 @@ int jugador_nuevo(Jugador** jugador, int slot){
 			(*jugador)->carton[i][j]=-1;
 		}
 	}
+
 
 
 
@@ -49,7 +49,7 @@ int jugador_registrar(const char* username, const char* pass){
 	}
 
 
-	if( (fp=fopen("users.txt","r+")) == NULL ){
+	if( (fp=fopen("users.txt","w+")) == NULL ){
 		free(linea);
 		return -1;
 	}

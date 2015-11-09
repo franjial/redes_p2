@@ -9,8 +9,8 @@ struct jugador{
 	int slot; /*posicion en array de jugadores*/
 	char username[40];
 	int id_partida; /*id partida asignada, -1 si en ninguna*/
-	int listo; /*bool true si jugador listo para empezar*/
 	int logeado; /*bool true si esta logeado correctamente*/
+
 
 	int carton[3][9];
 

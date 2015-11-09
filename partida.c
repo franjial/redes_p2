@@ -10,8 +10,13 @@
 void partida_nueva(int id, Partida** partida){
 	int i;
 
+
+
 	*partida = (Partida *) malloc(sizeof(Partida));
 	(*partida)->iniciada = 0;
+	(*partida)->terminada = 0;
+	(*partida)->linea = 0;
+	(*partida)->slinea = 0;
 
 	bombo_gen( &((*partida)->bombo), 90, 1);
 
@@ -27,9 +32,11 @@ void partida_nueva(int id, Partida** partida){
 		(*partida)->fuera[i]=0;
 	}
 
-	(*partida)->ganador_bingo = NULL;
-	(*partida)->ganador_linea = NULL;
-	(*partida)->ganador_slinea = NULL;
+	for(i=0;i<4;i++){
+		(*partida)->ganador_bingo[i] = NULL;
+		(*partida)->ganador_linea[i] = NULL;
+		(*partida)->ganador_slinea[i] = NULL;
+	}
 
 }
 
@@ -167,5 +174,69 @@ void partida_jugadores_str(Partida *partida, char buffer[250]){
 			strcat(buffer,aux);
 		}
 	}
+
+}
+
+/**
+ * inserta en partida un jugador que gana bingo
+ * si ya esta insertado, no hace nada
+ */
+void partida_bingo(Partida* partida, Jugador* j){
+	int i;
+
+	for(i=0;i<4;i++){
+		if(partida->ganador_bingo[i]==j)
+			return;
+	}
+
+
+	i=0;
+	while(partida->ganador_bingo[i]!=NULL && i<4)
+		i++;
+
+	partida->ganador_bingo[i] = j;
+
+}
+
+/**
+ * inserta en partida un jugador que gana linea
+ * si ya esta insertado, no hace nada
+ */
+void partida_linea(Partida* partida, Jugador* j){
+	int i = 0;
+
+	/*comp. si esta ya*/
+	for(i=0;i<4;i++){
+		if(partida->ganador_linea[i]==j)
+			return;
+	}
+
+	i=0;
+	while(partida->ganador_linea[i]!=NULL && i<4)
+		i++;
+
+	partida->ganador_linea[i] = j;
+
+}
+
+/**
+ * inserta en partida un jugador que gana segunda linea
+ * si ya esta insertado, no hace nada
+ */
+void partida_slinea(Partida* partida, Jugador* j){
+	int i = 0;
+
+	/*comp. si esta ya*/
+	for(i=0;i<4;i++){
+		if(partida->ganador_slinea[i]==j)
+			return;
+	}
+
+
+	i=0;
+	while(partida->ganador_slinea[i]!=NULL && i<4)
+		i++;
+
+	partida->ganador_slinea[i] = j;
 
 }
