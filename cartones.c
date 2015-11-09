@@ -5,9 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+/**
+ * pone en el argumento, que debe ser una matriz 3x9,
+ * un carton para bingo con numeros aleatorios.
+ */
 void carton_nuevo(int carton[3][9]){
   int i,j;
+  int aux;
   Bola* bombo = NULL;
   int vacias = 27; /*27 posiciones a rellenar*/
   int n=-1;
@@ -110,8 +114,26 @@ void carton_nuevo(int carton[3][9]){
   }
   bombo_clean(&bombo);
 
+  /* ordenar columnas */
+  i = 0;
+  for(j=0;j<9;j++){
+    while(i<2){
+
+      if(carton[i][j] > carton[i+1][j]){
+        aux = carton[i+1][j];
+        carton[i+1][j] = carton[i][j];
+        carton[i][j] = aux;
+        i=0;
+      }
+      else{
+        i++;
+      }
+    }
+    i=0;
+  }
 
 
+  /* meter huecos en el carton */
   srand(time(NULL));
   for(i=0;i<3;i++){
     n=4;
@@ -125,6 +147,9 @@ void carton_nuevo(int carton[3][9]){
   }
 }
 
+/**
+ * imprime carton en varias lineas
+ */
 void carton_print(int carton[3][9]){
   int i,j;
   for(i=0;i<3;i++){
@@ -168,7 +193,9 @@ int carton_bingo(int carton[3][9], int bolas_fuera[90]){
 	return 1;
 }
 
-
+/**
+ * indica si el carton tiene linea
+ */
 int carton_linea(int carton[3][9], int bolas_fuera[90]){
   int i,j;
   int test;
@@ -188,6 +215,9 @@ int carton_linea(int carton[3][9], int bolas_fuera[90]){
 }
 
 
+/**
+ * indica si el carton tiene dos lineas
+ */
 int carton_slinea(int carton[3][9], int bolas_fuera[90]){
   int i,j;
   int test;
@@ -212,7 +242,9 @@ int carton_slinea(int carton[3][9], int bolas_fuera[90]){
 }
 
 
-
+/**
+ * imprime carton en una linea
+ */
 void carton_str(char buffer[250], int carton[3][9]){
   int i,j;
   char aux[4];

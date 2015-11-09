@@ -431,7 +431,7 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *id; /*cadena que identifica el comando a ejecutar*/
 	char *args; /*resto del buffer*/
 
-
+	/*no recibo comando*/
 	if(strcmp(buffer,"\n")==0){
 		return 0;
 	}
@@ -439,6 +439,7 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
 
+	/*no recibo comando*/
 	if(strlen(id)==0){
 		return 0;
 	}
