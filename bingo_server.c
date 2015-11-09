@@ -766,7 +766,7 @@ void cb_salir_partida(char *args, Jugador**j, Partida** p){
 
 	/*si esta en partida*/
 	if((*j)->id_partida > -1){
-		if(partida_sacar_jugador(&partida[(*j)->id_partida], (*j)->id)){
+		if(partida_sacar_jugador(partida[(*j)->id_partida], (*j)->id)){
 			sprintf(buffer,"+Ok. Has salido de partida.",(*j)->username);
 		}
 		else{
@@ -880,7 +880,7 @@ void cb_salir(char *args, Jugador**j, Partida **p){
 
 	printf("salir jugador %s\n",(*j)->username);
 
-	partida_sacar_jugador(p,(*j)->id);
+	partida_sacar_jugador(*p,(*j)->id);
 
 	sprintf(buffer,"+Ok. Jugador %s ha abandonado la partida.",(*j)->username);
 

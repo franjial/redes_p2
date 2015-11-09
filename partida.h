@@ -28,7 +28,7 @@ int partida_ingresar(Partida* p, Jugador* j); /*ingresa un jugador*/
 
 void partida_clean(Partida** partida);
 
-int partida_sacar_jugador(Partida** partida, int id_jugador); /*sacar jugador de la partida*/
+int partida_sacar_jugador(Partida* partida, int id_jugador); /*sacar jugador de la partida*/
 
 void partida_jugadores_str(Partida *partida, char buffer[250]);
 #endif

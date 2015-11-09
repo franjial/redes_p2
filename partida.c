@@ -120,7 +120,7 @@ void partida_clean(Partida** p){
  * Modifica: jugador con id_jugador dentro de partida
  *           njugadores: si saca un jugador de partida actualiza valor de njugadores
  */
-int partida_sacar_jugador(Partida** partida, int id_jugador){
+int partida_sacar_jugador(Partida* partida, int id_jugador){
 	int i;
 
 	if(partida == NULL){
@@ -129,11 +129,11 @@ int partida_sacar_jugador(Partida** partida, int id_jugador){
 
 
 	for(i=0;i<4;i++){
-		if( (*partida)->jugadores[i] != NULL ){
-			if( (*partida)->jugadores[i]->id == id_jugador ){
-				(*partida)->jugadores[i]->id_partida = -1;
-				(*partida)->jugadores[i]=NULL;
-				(*partida)->njugadores--;
+		if( partida->jugadores[i] != NULL ){
+			if( partida->jugadores[i]->id == id_jugador ){
+				partida->jugadores[i]->id_partida = -1;
+				partida->jugadores[i]=NULL;
+				partida->njugadores--;
 				return 1;
 			}
 		}
