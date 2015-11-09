@@ -17,6 +17,7 @@
 
 int
 main(int argc, char* argv[]){
+
 	int i,j;
 
 	Command* cmd_cli = NULL;
@@ -46,7 +47,7 @@ main(int argc, char* argv[]){
 	cmd_ini(&cmd_srv);
 
 	/*registro de comandos que acepto de los clientes*/
-	cmd_reg(&cmd_cli, "WHO", &cb_who);
+	/*cmd_reg(&cmd_cli, "WHO", &cb_who);*/
 	cmd_reg(&cmd_cli, "USUARIO", &cb_usuario);
 	cmd_reg(&cmd_cli, "PASSWORD", &cb_password);
 	cmd_reg(&cmd_cli, "REGISTER", &cb_register);
@@ -243,9 +244,14 @@ main(int argc, char* argv[]){
 						fgets(buffer, sizeof(buffer), stdin);
 
 
-						if(!cmd_exe(cmd_srv, buffer, NULL, NULL)){
+
+						if(strcmp(buffer,"\n")==0){
+							/*no hacer nada*/
+						}
+						else if(!cmd_exe(cmd_srv, buffer, NULL, NULL)){
 							printf("-Err. Comando desconocido.\n");
 						}
+
 
 
 					}
@@ -274,11 +280,10 @@ main(int argc, char* argv[]){
 						}
 					}
 				}
-			}
+			} /*END-FOR*/
 
 		}
-
-	}
+	} /*END-WHILE*/
 
 	close(sd);
 	return EXIT_SUCCESS;
@@ -427,10 +432,16 @@ int cmd_exe(Command* cmd_head, char *buffer, Jugador** j, Partida** p){
 	char *args; /*resto del buffer*/
 
 
+	if(strcmp(buffer,"\n")==0){
+		return 0;
+	}
 
 	id = strtok(buffer," \n"); /*extraer comando*/
 	args = strtok(NULL, "\n");
 
+	if(strlen(id)==0){
+		return 0;
+	}
 
 	while(cmd_head!=NULL && strcmp(cmd_head->buffer,id)!=0){
 		/* pone cmd_head al nodo que coincide con comando dentro de buffer,

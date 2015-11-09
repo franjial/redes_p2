@@ -33,6 +33,8 @@ void partida_nueva(int id, Partida** partida){
 
 }
 
+
+
 int partida_sacar(Partida** partida){
 	int i;
 	i = bombo_pop(&(*partida)->bombo);
